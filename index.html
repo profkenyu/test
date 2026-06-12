@@ -2,1036 +2,349 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>TRANSIT: 7 SYMPHONIES (FIXED LATE TIMELINE)</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Singularity - Black Hole Voyage</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;touch-action:manipulation;}
-:root{
-  --bg:#050505;
-  --cr:#8b0018;
-  --crb:#c41e3a;
-  --crg:#ff2a4a;
-  --crd:#2a0008;
-  --tx:#ddd5cc;
-  --txd:#3a3030;
-  --txm:#7a6565;
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#000002;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  touch-action:none;
 }
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:'DM Mono',monospace;}
-
-/* ── SCREENS ── */
-.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;}
-.screen.active{display:flex;}
-
-/* ── TITLE ── */
-#sc-title{gap:0;}
-#title-canvas{position:absolute;inset:0;}
-.title-wrap{position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:32px;}
-.t-main{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(54px, 16vw, 120px);
-  letter-spacing:.2em;line-height:.85;
-  color:var(--tx);
-  text-shadow:0 0 90px rgba(196,30,58,.3),0 0 180px rgba(139,0,24,.15);
+canvas{
+  display:block;
+  width:100%;
+  height:100%;
 }
-.t-sub{font-size:10px;letter-spacing:.5em;color:var(--txm);text-transform:uppercase;margin-top:12px;}
-.divider{width:40px;height:1px;background:var(--cr);margin:1.2em auto;}
-
-/* ── BUTTONS ── */
-.btn{padding:14px 44px;background:transparent;border:1px solid;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.3em;cursor:pointer;text-transform:uppercase;transition:all .25s;}
-.btn-cr{border-color:var(--cr);color:var(--crb);}
-.btn-cr:hover,.btn-cr:active{background:rgba(139,0,24,.1);border-color:var(--crg);box-shadow:0 0 28px rgba(255,42,74,.25);}
-.btn-dim{border-color:var(--txd);color:var(--txm);}
-.btn-dim:hover,.btn-dim:active{border-color:var(--txm);color:var(--tx);}
-.btn:disabled{opacity:.25;cursor:default;pointer-events:none;}
-
-/* ── TIME SELECT ── */
-#sc-time{gap:40px;}
-.sect-lbl{font-size:10px;letter-spacing:.4em;color:var(--txm);text-transform:uppercase;margin-bottom:10px;}
-.time-row{display:flex;gap:18px;}
-.time-btn{
-  width:120px;height:120px;background:transparent;
-  border:1px solid var(--crd);color:var(--txd);
-  font-family:'Bebas Neue',sans-serif;font-size:46px;
-  cursor:pointer;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:5px;transition:all .25s;
+#title{
+    position:fixed;
+    top:24px;
+    left:24px;
+    color:rgba(255,255,255,.7);
+    letter-spacing:.25em;
+    font-size:12px;
+    pointer-events:none;
+    right:120px;
+    z-index:10;
 }
-.time-btn em{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;font-style:normal;color:var(--txd);}
-.time-btn.sel,.time-btn:hover{border-color:var(--crg);color:var(--tx);background:rgba(139,0,24,.15);box-shadow:0 0 28px rgba(255,42,74,.2);}
-.time-btn.sel em,.time-btn:hover em{color:var(--crg);}
-.time-nav{display:flex;gap:12px;margin-top:10px;}
-
-/* ── GAME ── */
-#sc-game{flex-direction:column;}
-#game-canvas{position:absolute;inset:0;}
-.hud{
-  position:relative;z-index:2;
-  display:flex;justify-content:space-between;align-items:flex-start;
-  padding:24px 32px 0;pointer-events:none;width:100%;
+#title span{
+    display:block;
+    font-size:28px;
+    font-weight:200;
+    margin-bottom:6px;
+    color:#fff;
 }
-.h-stage-no{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.1em;color:var(--crg);line-height:1;}
-.h-stage-nm{font-size:9px;letter-spacing:.2em;color:var(--txm);margin-top:5px;text-transform:uppercase;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.h-score{text-align:center;}
-.h-score-v{font-family:'Bebas Neue',sans-serif;font-size:38px;color:var(--tx);line-height:1;letter-spacing:0.05em;}
-.h-score-l{font-size:8px;letter-spacing:.4em;color:var(--txd);}
-.h-timer{text-align:right;}
-.h-timer-v{font-family:'Bebas Neue',sans-serif;font-size:38px;color:var(--tx);line-height:1;}
-.h-timer-l{font-size:8px;letter-spacing:.4em;color:var(--txd);}
-
-/* COMBO */
-.combo-wrap{
-  position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);
-  z-index:2;text-align:center;pointer-events:none;
-  opacity:0;transition:opacity .35s ease;
+#back-btn{
+    position:fixed;
+    top:24px;
+    right:24px;
+    color:rgba(255,255,255,.5);
+    text-decoration:none;
+    font-size:12px;
+    letter-spacing:.25em;
+    border:1px solid rgba(255,255,255,.2);
+    padding:8px 16px;
+    border-radius:4px;
+    transition:all .3s ease;
+    z-index:10;
 }
-.combo-wrap.show{opacity:1;}
-.combo-v{font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--crg);text-shadow:0 0 30px rgba(255,42,74,.6);line-height:1;display:inline-block;}
-.combo-l{font-size:10px;letter-spacing:.5em;color:var(--crb);margin-top:4px;}
-@keyframes combo-pop{
-  0%{transform:scale(0.72);}
-  55%{transform:scale(1.14);}
-  80%{transform:scale(0.97);}
-  100%{transform:scale(1.0);}
+#back-btn:hover{
+    color:rgba(255,255,255,1);
+    background:rgba(255,255,255,.1);
+    border-color:rgba(255,255,255,.5);
 }
-.combo-v.popping{animation:combo-pop .28s cubic-bezier(.34,1.56,.64,1) forwards;}
-
-/* FEEDBACK */
-@keyframes feedback-rise{
-  0%{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}
-  30%{opacity:1;transform:translateX(-50%) translateY(-8px) scale(1.04);}
-  100%{opacity:0;transform:translateX(-50%) translateY(-32px) scale(0.9);}
+@media (max-width:640px){
+  #title { top:20px; left:20px; right:100px; }
+  #title span { font-size:18px; margin-bottom:4px; }
+  #title { font-size:10px; letter-spacing:.15em; }
+  #back-btn { top:20px; right:20px; padding:6px 12px; font-size:10px; }
 }
-#feedback{
-  position:absolute;top:34%;left:50%;transform:translateX(-50%);
-  z-index:4;pointer-events:none;
-  font-family:'Bebas Neue',sans-serif;font-size:34px;
-  letter-spacing:.2em;opacity:0;white-space:nowrap;
-}
-#feedback.rising{animation:feedback-rise .52s ease-out forwards;}
-
-/* HIT ZONES */
-.hit-zones{
-  position:absolute;bottom:0;left:0;right:0;
-  z-index:3;display:flex;height:130px;
-}
-.hz{
-  flex:1;background:rgba(4,0,1,.93);
-  border-top:1px solid rgba(139,0,24,.25);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;position:relative;overflow:hidden;
-}
-.hz+.hz{border-left:1px solid rgba(46,0,10,.6);}
-.hz::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 50% 115%,rgba(139,0,24,.15) 0%,transparent 70%);
-  animation:hz-breathe 2.5s ease-in-out infinite;
-}
-.hz:nth-child(2)::before{animation-delay:0.8s;}
-.hz:nth-child(3)::before{animation-delay:1.6s;}
-@keyframes hz-breathe{0%,100%{opacity:.45}50%{opacity:1}}
-.hz-inner{
-  width:12px;height:12px;border-radius:50%;
-  border:2px solid var(--crd);
-  position:relative;z-index:1;
-  transition:all .06s;
-}
-.hz.tap .hz-inner{background:var(--crg);border-color:var(--crg);box-shadow:0 0 20px var(--crg),0 0 40px rgba(255,42,74,.5);transform:scale(1.5);}
-.hz.tap::before{background:radial-gradient(ellipse at 50% 115%,rgba(255,42,74,.4) 0%,transparent 70%);animation:none;}
-
-/* ── RESULT ── */
-#sc-result{gap:0;}
-.r-stg{font-size:10px;letter-spacing:.5em;color:var(--txm);text-transform:uppercase;margin-bottom:14px;}
-.r-ttl{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,10vw,80px);letter-spacing:.1em;color:var(--tx);}
-.r-score{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(84px,18vw,140px);
-  letter-spacing:.02em;color:var(--crg);
-  text-shadow:0 0 50px rgba(255,42,74,.35);line-height:1;margin:12px 0;
-}
-.stat-row{display:flex;gap:24px;margin:24px 0 44px;}
-.stat-item{text-align:center;min-width:65px;}
-.stat-v{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--tx);line-height:1;}
-.stat-l{font-size:8px;letter-spacing:.25em;color:var(--txd);text-transform:uppercase;margin-top:6px;}
-.r-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
-
-/* ── CLEAR ── */
-#sc-clear{overflow:hidden;}
-#clear-canvas{position:absolute;inset:0;}
-.clr-wrap{position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;}
-.clr-lbl{font-size:10px;letter-spacing:.6em;color:var(--crg);text-transform:uppercase;}
-.clr-ttl{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(80px,22vw,180px);
-  letter-spacing:.15em;color:var(--tx);line-height:.82;
-  text-shadow:0 0 70px rgba(255,42,74,.4),0 0 140px rgba(196,30,58,.2);
-}
-.clr-sc{font-size:13px;letter-spacing:.25em;color:var(--tx);margin-top:10px;}
-.clr-btns{margin-top:36px;display:flex;gap:14px;}
-
-/* ── STAGE INTRO OVERLAY ── */
-#stage-intro{
-  position:absolute;inset:0;z-index:10;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(5,5,5,.95);
-  opacity:0;pointer-events:none;transition:opacity .4s;
-}
-#stage-intro.show{opacity:1;pointer-events:all;}
-.si-num{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,15vw,120px);letter-spacing:.15em;color:var(--crg);text-shadow:0 0 50px rgba(255,42,74,.4);line-height:1;}
-.si-name{font-size:11px;letter-spacing:.3em;color:var(--tx);text-transform:uppercase;margin-top:12px;text-align:center;padding:0 20px;line-height:1.4;}
-.si-bar{width:140px;height:1px;background:var(--cr);margin:18px auto;}
-.si-bpm{font-size:10px;letter-spacing:.3em;color:var(--txm);}
 </style>
 </head>
 <body>
-
-<div id="sc-title" class="screen active">
-  <canvas id="title-canvas"></canvas>
-  <div class="title-wrap">
-    <div>
-      <div class="t-main">TRANSIT</div>
-      <div class="t-sub">7 Symphonies Non-Stop Project</div>
-    </div>
-    <div class="divider"></div>
-    <button class="btn btn-cr" onclick="clickNav('sc-time')">BEGIN</button>
-  </div>
+<div id="title">
+  <span>SINGULARITY Voyager</span>
+  GRAVITATIONAL LENSING / ACCRETION DISK · Drag to Orbit
 </div>
+<a href="index.html" id="back-btn">BACK</a>
 
-<div id="sc-time" class="screen">
-  <div class="sect-lbl">Select Play Duration</div>
-  <div class="time-row">
-    <button class="time-btn" onclick="selTime(45,this)">45<em>sec</em></button>
-    <button class="time-btn" onclick="selTime(90,this)">90<em>sec</em></button>
-  </div>
-  <div class="time-nav">
-    <button class="btn btn-dim" onclick="clickNav('sc-title')">BACK</button>
-    <button class="btn btn-cr" id="start-btn" onclick="clickStart()" disabled>START</button>
-  </div>
-</div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
-<div id="sc-game" class="screen">
-  <canvas id="game-canvas"></canvas>
-  <div class="hud">
-    <div>
-      <div class="h-stage-no" id="h-stg">STG 01</div>
-      <div class="h-stage-nm" id="h-nm">G-STRING</div>
-    </div>
-    <div class="h-score">
-      <div class="h-score-v" id="h-sc">0</div>
-      <div class="h-score-l">SCORE</div>
-    </div>
-    <div class="h-timer">
-      <div class="h-timer-v" id="h-tm">45</div>
-      <div class="h-timer-l">SEC</div>
-    </div>
-  </div>
-  <div class="combo-wrap" id="combo-wrap">
-    <div class="combo-v" id="combo-val">0</div>
-    <div class="combo-l">COMBO</div>
-  </div>
-  <div id="feedback"></div>
-  <div class="hit-zones">
-    <div class="hz" id="hz-0" data-lane="0"><div class="hz-inner"></div></div>
-    <div class="hz" id="hz-1" data-lane="1"><div class="hz-inner"></div></div>
-    <div class="hz" id="hz-2" data-lane="2"><div class="hz-inner"></div></div>
-  </div>
+const pointer = new THREE.Vector2();
+const target = new THREE.Vector2();
+let isTargeting = false;
 
-  <div id="stage-intro">
-    <div class="si-num" id="si-num">STAGE 01</div>
-    <div class="si-name" id="si-name">AIR ON THE G STRING</div>
-    <div class="si-bar"></div>
-    <div class="si-bpm" id="si-bpm">72 BPM</div>
-  </div>
-</div>
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 40000);
+camera.position.set(0, 150, 800);
 
-<div id="sc-result" class="screen">
-  <div class="r-stg" id="r-stg">STAGE 1 COMPLETE</div>
-  <div class="r-ttl">RESULT</div>
-  <div class="r-score" id="r-sc">0</div>
-  <div class="stat-row">
-    <div class="stat-item"><div class="stat-v" id="r-perf">0</div><div class="stat-l">PERFECT</div></div>
-    <div class="stat-item"><div class="stat-v" id="r-good">0</div><div class="stat-l">GOOD</div></div>
-    <div class="stat-item"><div class="stat-v" id="r-miss">0</div><div class="stat-l">MISS</div></div>
-    <div class="stat-item"><div class="stat-v" id="r-cmb">0</div><div class="stat-l">MAX COMBO</div></div>
-  </div>
-  <div class="r-btns">
-    <button class="btn btn-dim" onclick="clickNav('sc-title')">HOME</button>
-    <button class="btn btn-dim" onclick="clickRetry()">RETRY</button>
-    <button class="btn btn-cr" id="next-btn" onclick="clickNext()">NEXT STAGE</button>
-  </div>
-</div>
+const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
 
-<div id="sc-clear" class="screen">
-  <canvas id="clear-canvas"></canvas>
-  <div class="clr-wrap">
-    <div class="clr-lbl">All Symphonies Concluded</div>
-    <div class="clr-ttl">ALL CLEAR</div>
-    <div class="divider"></div>
-    <div class="clr-sc" id="clr-sc">TOTAL SCORE: 0</div>
-    <div class="clr-btns">
-      <button class="btn btn-dim" onclick="clickNav('sc-title')">HOME</button>
-      <button class="btn btn-cr" onclick="clickPlayAgain()">PLAY AGAIN</button>
-    </div>
-  </div>
-</div>
-
-<script>
-'use strict';
-
-// ═══════════════════════════════════════════════
-//  AUDIO ENGINE — Dynamic Orchestra & Master Gate
-// ═══════════════════════════════════════════════
-let _ac = null;
-let mainConcertDelay = null; 
-let masterVolumeGate = null; 
-
-function ac() {
-  if (!_ac) { 
-    _ac = new (window.AudioContext || window.webkitAudioContext)(); 
-    masterVolumeGate = _ac.createGain();
-    masterVolumeGate.gain.setValueAtTime(1, _ac.currentTime);
-    
-    mainConcertDelay = _ac.createDelay();
-    mainConcertDelay.delayTime.value = 0.22;
-    const reverbFeedback = _ac.createGain();
-    reverbFeedback.gain.value = 0.28;
-    
-    mainConcertDelay.connect(reverbFeedback);
-    reverbFeedback.connect(mainConcertDelay);
-    
-    masterVolumeGate.connect(_ac.destination);
-    mainConcertDelay.connect(masterVolumeGate);
-  }
-  if (_ac.state === 'suspended') _ac.resume();
-  return _ac;
-}
-
-function fadeOutAudioEngine() {
-  if (!masterVolumeGate) return;
-  try {
-    const ctx = ac(), t = ctx.currentTime;
-    masterVolumeGate.gain.setValueAtTime(masterVolumeGate.gain.value, t);
-    masterVolumeGate.gain.linearRampToValueAtTime(0.001, t + 1.2);
-  } catch(e){}
-}
-
-function resetAudioEngineVolume() {
-  if (!masterVolumeGate) return;
-  try { masterVolumeGate.gain.setValueAtTime(1, ac().currentTime); } catch(e){}
-}
-
-function sMenuClick() {
-  try {
-    const ctx = ac(), t = ctx.currentTime;
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.type = 'sine'; o.frequency.setValueAtTime(750, t);
-    o.frequency.exponentialRampToValueAtTime(250, t + 0.04);
-    g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-    o.connect(g); g.connect(ctx.destination);
-    o.start(t); o.stop(t + 0.06);
-  } catch(e){}
-}
-
-function playOrchestraNode(freq, instrType, baseVolume, duration = 0.4, isAccent = false) {
-  try {
-    const ctx = ac(), t = ctx.currentTime;
-    const osc1 = ctx.createOscillator(), osc2 = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    const filterNode = ctx.createBiquadFilter();
-    
-    filterNode.type = 'lowpass';
-    const volMult = isAccent ? 1.35 : 0.85;
-
-    if (instrType === 'piano') {
-      osc1.type = 'sine'; osc1.frequency.setValueAtTime(freq, t);
-      osc2.type = 'triangle'; osc2.frequency.setValueAtTime(freq * 2, t);
-      filterNode.Q.setValueAtTime(2, t);
-      filterNode.frequency.setValueAtTime(freq * 3.5, t);
-      filterNode.frequency.exponentialRampToValueAtTime(freq * 1.1, t + 0.2);
-
-      gainNode.gain.setValueAtTime(0, t);
-      gainNode.gain.linearRampToValueAtTime(baseVolume * volMult, t + 0.005);
-      gainNode.gain.exponentialRampToValueAtTime(baseVolume * 0.25, t + duration * 0.4);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, t + duration * 1.1);
-    } 
-    else if (instrType === 'string') {
-      osc1.type = 'sawtooth'; osc1.frequency.setValueAtTime(freq - 0.4, t);
-      osc2.type = 'triangle'; osc2.frequency.setValueAtTime(freq * 2 + 0.8, t);
-      filterNode.frequency.setValueAtTime(freq * 2.2, t);
-      filterNode.frequency.linearRampToValueAtTime(freq * 1.3, t + duration);
-
-      gainNode.gain.setValueAtTime(0, t);
-      gainNode.gain.linearRampToValueAtTime(baseVolume * volMult, t + 0.05);
-      gainNode.gain.exponentialRampToValueAtTime(baseVolume * 0.35, t + duration * 0.6);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, t + duration * 1.3);
-    } 
-    else { 
-      osc1.type = 'sawtooth'; osc1.frequency.setValueAtTime(freq, t);
-      osc2.type = 'sawtooth'; osc2.frequency.setValueAtTime(freq * 1.003, t);
-      filterNode.frequency.setValueAtTime(freq * 2.8, t);
-      filterNode.frequency.exponentialRampToValueAtTime(freq * 1.6, t + duration * 0.5);
-
-      gainNode.gain.setValueAtTime(0, t);
-      gainNode.gain.linearRampToValueAtTime(baseVolume * volMult, t + 0.02);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, t + duration);
-    }
-
-    osc1.connect(filterNode); osc2.connect(filterNode);
-    filterNode.connect(gainNode);
-    gainNode.connect(masterVolumeGate);
-    gainNode.connect(mainConcertDelay); 
-    
-    osc1.start(t); osc2.start(t);
-    osc1.stop(t + duration * 1.4); osc2.stop(t + duration * 1.4);
-  } catch(e){}
-}
-
-// ═══════════════════════════════════════════════
-//  7 STAGES DATA (후반부 템포 지연 및 늘어짐 전면 수정)
-// ═══════════════════════════════════════════════
-const FALL_DUR  = 2.20;  
-const W_PERF    = .14;   
-const W_GOOD    = .28;   
-const HZ_H      = 130;   
-
-const STAGES = [
-  {
-    bpm: 72, name: "Air on the G String (Bach)", instr: 'string', gain: 0.16,
-    baseChords: [
-      [146.83, 220.00, 293.66], [138.59, 220.00, 277.18], [110.00, 164.81, 220.00], [98.00, 146.83, 246.94],
-      [87.31, 130.81, 261.63], [73.42, 110.00, 220.00], [82.41, 123.47, 246.94], [110.00, 164.81, 220.00]
-    ],
-    // [수정]: 45초 이후 타임라인의 밀도를 타이트하게 좁혀 속도감 배가
-    fullTimeline: [
-      [0.0, 0, 293.66], [1.0, 1, 293.66], [2.0, 2, 261.63], [3.0, 1, 261.63],
-      [4.0, 0, 246.94], [5.0, 1, 246.94], [6.0, 2, 220.00], [7.0, 1, 220.00],
-      [8.0, 0, 196.00], [9.0, 1, 246.94], [10.0, 2, 293.66], [11.5, 1, 392.00],
-      [12.0, 0, 369.99], [13.0, 1, 293.66], [14.0, 2, 220.00], [15.0, 1, 146.83],
-      [16.0, 0, 293.66], [17.5, 1, 329.63], [18.0, 2, 349.23], [20.0, 1, 392.00],
-      [22.0, 0, 440.00], [23.0, 1, 493.88], [24.0, 2, 523.25], [26.0, 1, 587.33],
-      [28.0, 0, 659.25], [29.5, 2, 587.33], [31.0, 1, 523.25], [33.0, 0, 493.88],
-      [35.0, 1, 440.00], [37.0, 2, 392.00], [39.0, 0, 349.23], [42.0, 1, 293.66],
-      // ── 후반부 속도 저하 해결 (컴팩트 간격 배치) ──
-      [45.0, 0, 293.66], [46.5, 1, 392.00], [48.0, 2, 440.00], [49.5, 1, 493.88],
-      [51.0, 0, 523.25], [52.5, 1, 587.33], [54.0, 2, 659.25], [55.5, 0, 698.46],
-      [57.0, 1, 783.99], [58.5, 2, 880.00], [60.0, 0, 698.46], [61.5, 1, 587.33],
-      [63.0, 2, 523.25], [64.5, 1, 493.88], [66.0, 0, 440.00], [67.5, 1, 392.00],
-      [69.0, 2, 440.00], [70.5, 0, 493.88], [72.0, 1, 523.25], [73.5, 2, 587.33],
-      [75.0, 0, 659.25], [76.5, 1, 698.46], [78.0, 2, 783.99], [79.5, 1, 880.00],
-      [81.0, 0, 932.33], [82.5, 2, 880.00], [84.0, 1, 783.99], [85.5, 0, 698.46],
-      [87.0, 1, 587.33], [88.5, 2, 493.88]
-    ]
-  },
-  {
-    bpm: 85, name: "Für Elise (Beethoven)", instr: 'piano', gain: 0.14,
-    baseChords: [
-      [110.00, 164.81, 329.63], [116.54, 174.61, 293.66], [110.00, 164.81, 329.63], [130.81, 196.00, 329.63],
-      [146.83, 220.00, 349.23], [110.00, 164.81, 220.00], [116.54, 174.61, 293.66], [110.00, 164.81, 329.63]
-    ],
-    fullTimeline: [
-      [0.0, 2, 659.25], [0.4, 1, 622.25], [0.8, 2, 659.25], [1.2, 1, 622.25], [1.6, 2, 659.25],
-      [2.0, 0, 493.88], [2.4, 1, 587.33], [2.8, 2, 523.25], [3.2, 0, 440.00],
-      [4.0, 1, 130.81], [4.4, 2, 261.63], [4.8, 0, 440.00], [5.2, 1, 493.88],
-      [6.0, 2, 146.83], [6.4, 0, 293.66], [6.8, 1, 493.88], [7.2, 2, 523.25],
-      [8.0, 0, 659.25], [8.4, 1, 622.25], [8.8, 2, 659.25], [9.2, 1, 622.25], [9.6, 2, 659.25],
-      [10.0, 0, 493.88], [10.4, 1, 587.33], [10.8, 2, 523.25], [11.2, 0, 440.00],
-      [12.0, 1, 130.81], [12.4, 2, 261.63], [12.8, 0, 440.00], [13.2, 1, 493.88],
-      [14.0, 2, 146.83], [14.4, 0, 293.66], [14.8, 1, 523.25], [15.2, 2, 493.88], [16.0, 0, 440.00],
-      [18.0, 1, 493.88], [18.5, 2, 523.25], [19.0, 0, 587.33], [20.0, 1, 659.25],
-      [21.0, 2, 783.99], [21.5, 1, 698.46], [22.0, 0, 659.25], [23.0, 1, 587.33],
-      [24.0, 2, 523.25], [25.0, 0, 493.88], [26.0, 1, 440.00], [27.0, 2, 392.00],
-      [29.0, 0, 329.63], [30.0, 1, 659.25], [31.0, 2, 622.25], [32.0, 1, 659.25],
-      [34.0, 0, 783.99], [36.0, 1, 880.00], [38.0, 2, 987.77], [41.0, 0, 1046.50],
-      // ── 후반부 속도 저하 해결 (더 촘촘해진 변주 선율) ──
-      [45.0, 2, 659.25], [45.4, 1, 622.25], [45.8, 2, 659.25], [46.4, 0, 493.88],
-      [47.0, 1, 587.33], [47.6, 2, 523.25], [48.2, 0, 440.00], [48.8, 1, 329.63],
-      [49.4, 2, 220.00], [50.0, 1, 440.00], [50.6, 0, 523.25], [51.2, 2, 659.25],
-      [51.8, 1, 880.00], [52.4, 0, 987.77], [53.2, 2, 659.25], [53.6, 1, 622.25],
-      [54.0, 2, 659.25], [54.6, 0, 493.88], [55.2, 1, 587.33], [55.8, 2, 523.25],
-      [56.4, 0, 440.00], [57.2, 1, 130.81], [57.8, 2, 261.63], [58.4, 0, 440.00],
-      [60.0, 1, 493.88], [61.0, 2, 523.25], [62.0, 0, 587.33], [63.0, 1, 659.25],
-      [64.5, 2, 783.99], [66.0, 1, 698.46], [67.5, 0, 659.25], [69.0, 1, 587.33],
-      [71.0, 2, 523.25], [73.0, 0, 493.88], [75.0, 1, 440.00], [77.0, 2, 392.00],
-      [79.0, 0, 329.63], [81.0, 1, 440.00], [83.0, 2, 523.25], [85.0, 0, 659.25],
-      [86.5, 1, 783.99], [88.0, 2, 880.00]
-    ]
-  },
-  {
-    bpm: 95, name: "Hungarian Dance No.5 (Brahms)", instr: 'violin', gain: 0.13,
-    baseChords: [[110.00, 164.81, 220.00], [146.83, 220.00, 293.66], [116.54, 174.61, 293.66], [110.00, 164.81, 220.00]],
-    fullTimeline: [
-      [0.0, 0, 293.66], [0.4, 1, 329.63], [0.8, 2, 349.23], [1.6, 1, 440.00],
-      [2.0, 2, 392.00], [2.4, 1, 349.23], [2.8, 0, 329.63], [3.6, 1, 220.00],
-      [4.0, 0, 293.66], [4.4, 1, 329.63], [4.8, 2, 349.23], [5.6, 1, 392.00],
-      [6.0, 0, 329.63], [6.8, 2, 261.63], [7.6, 1, 220.00], [8.5, 0, 440.00],
-      [10.0, 1, 493.88], [11.0, 2, 523.25], [12.5, 1, 587.33], [14.0, 0, 659.25],
-      [16.0, 2, 587.33], [18.0, 1, 523.25], [20.0, 0, 493.88], [23.0, 1, 440.00],
-      [26.0, 2, 392.00], [29.0, 1, 349.23], [32.0, 0, 329.63], [36.0, 2, 293.66],
-      [40.0, 1, 220.00], [44.0, 0, 146.83], 
-      // ── 후반부 속도 저하 해결 ──
-      [46.0, 1, 220.00], [47.5, 2, 293.66], [49.0, 1, 349.23], [50.5, 0, 440.00],
-      [52.0, 2, 523.25], [53.5, 1, 587.33], [55.0, 0, 659.25], [56.5, 1, 783.99],
-      [58.0, 2, 880.00], [59.5, 1, 783.99], [61.0, 0, 659.25], [62.5, 2, 587.33],
-      [64.0, 1, 523.25], [65.5, 0, 440.00], [67.0, 2, 349.23], [68.5, 1, 293.66],
-      [70.0, 0, 349.23], [71.5, 1, 440.00], [73.0, 2, 523.25], [74.5, 1, 587.33],
-      [76.0, 0, 659.25], [77.5, 2, 783.99], [79.0, 1, 880.00], [80.5, 0, 987.77],
-      [82.0, 2, 880.00], [83.5, 1, 783.99], [85.0, 0, 659.25], [86.5, 2, 587.33],
-      [88.0, 1, 440.00]
-    ]
-  },
-  {
-    bpm: 105, name: "Turkish March (Mozart)", instr: 'piano', gain: 0.14,
-    baseChords: [[110.00, 164.81, 220.00], [130.81, 196.00, 261.63], [116.54, 174.61, 293.66], [110.00, 164.81, 220.00]],
-    fullTimeline: [
-      [0.0, 0, 440.00], [0.3, 1, 493.88], [0.6, 2, 523.25], [0.9, 1, 587.33],
-      [1.2, 2, 659.25], [1.8, 1, 587.33], [2.1, 2, 659.25], [2.7, 0, 440.00],
-      [3.0, 1, 493.88], [3.3, 2, 523.25], [3.6, 1, 587.33], [3.9, 2, 659.25],
-      [4.5, 1, 587.33], [4.8, 2, 659.25], [5.4, 0, 349.23], [6.0, 1, 392.00],
-      [6.3, 2, 440.00], [6.6, 1, 493.88], [6.9, 2, 523.25], [7.5, 1, 493.88],
-      [7.8, 2, 523.25], [8.4, 0, 293.66], [9.0, 1, 329.63], [9.6, 2, 349.23],
-      [12.0, 0, 392.00], [15.0, 1, 440.00], [18.0, 2, 493.88], [22.0, 1, 523.25],
-      [26.0, 0, 587.33], [30.0, 2, 659.25], [35.0, 1, 698.46], [40.0, 0, 783.99],
-      // ── 후반부 속도 저하 해결 ──
-      [43.0, 2, 880.00], [45.0, 1, 659.25], [47.0, 0, 587.33], [49.0, 2, 523.25],
-      [51.0, 1, 493.88], [53.0, 0, 440.00], [55.0, 1, 392.00], [57.0, 2, 329.63],
-      [59.0, 0, 440.00], [61.0, 1, 493.88], [63.0, 2, 523.25], [65.0, 1, 587.33],
-      [67.0, 0, 659.25], [69.0, 2, 783.99], [71.0, 1, 880.00], [73.0, 0, 987.77],
-      [75.0, 2, 1046.50], [77.0, 1, 987.77], [79.0, 0, 880.00], [81.0, 2, 783.99],
-      [83.0, 1, 659.25], [85.0, 0, 587.33], [87.0, 2, 523.25], [88.5, 1, 440.00]
-    ]
-  },
-  {
-    bpm: 110, name: "Erlkönig (Schubert)", instr: 'string', gain: 0.15,
-    baseChords: [[98.00, 146.83, 196.00], [130.81, 196.00, 261.63], [116.54, 174.61, 261.63], [98.00, 146.83, 196.00]],
-    fullTimeline: [
-      [0.0, 0, 196.00], [0.3, 0, 196.00], [0.6, 0, 196.00], [0.9, 1, 233.08],
-      [1.2, 2, 293.66], [1.5, 1, 233.08], [1.8, 0, 196.00], [2.1, 1, 146.83],
-      [2.4, 2, 196.00], [2.7, 2, 196.00], [3.0, 2, 196.00], [3.3, 1, 233.08],
-      [3.6, 0, 293.66], [4.5, 1, 392.00], [5.5, 2, 466.16], [6.5, 1, 587.33],
-      [8.0, 0, 392.00], [10.0, 2, 349.23], [12.0, 1, 311.13], [15.0, 0, 293.66],
-      [18.0, 2, 233.08], [22.0, 1, 196.00], [26.0, 0, 146.83], [30.0, 2, 196.00],
-      [35.0, 1, 293.66], [40.0, 0, 392.00], 
-      // ── 후반부 속도 저하 해결 ──
-      [43.0, 2, 466.16], [45.5, 1, 587.33], [48.0, 0, 783.99], [50.5, 2, 698.46],
-      [53.0, 1, 587.33], [55.5, 0, 466.16], [58.0, 2, 392.00], [60.5, 1, 293.66],
-      [63.0, 0, 392.00], [65.0, 1, 466.16], [67.0, 2, 587.33], [69.0, 0, 783.99],
-      [71.0, 1, 880.00], [73.0, 2, 783.99], [75.0, 0, 698.46], [77.0, 1, 587.33],
-      [79.0, 2, 466.16], [81.0, 0, 392.00], [83.0, 1, 293.66], [85.0, 2, 392.00],
-      [86.5, 0, 466.16], [88.0, 1, 587.33]
-    ]
-  },
-  {
-    bpm: 115, name: "From the New World (Dvořák)", instr: 'string', gain: 0.16,
-    baseChords: [[130.81, 196.00, 261.63], [146.83, 220.00, 293.66], [116.54, 174.61, 261.63], [130.81, 196.00, 261.63]],
-    fullTimeline: [
-      [0.0, 1, 329.63], [0.8, 2, 392.00], [1.6, 2, 392.00], [2.4, 1, 329.63],
-      [3.2, 0, 293.66], [4.0, 0, 261.63], [4.8, 1, 293.66], [5.6, 2, 329.63],
-      [6.4, 1, 329.63], [7.2, 0, 293.66], [8.0, 0, 293.66], [9.5, 2, 440.00],
-      [11.0, 1, 392.00], [13.0, 0, 329.63], [15.0, 2, 293.66], [18.0, 1, 261.63],
-      [22.0, 0, 196.00], [26.0, 2, 261.63], [30.0, 1, 329.63], [35.0, 0, 392.00],
-      [40.0, 2, 523.25], 
-      // ── 후반부 속도 저하 해결 ──
-      [42.5, 1, 587.33], [45.0, 0, 659.25], [47.5, 2, 783.99], [50.0, 1, 880.00],
-      [52.5, 0, 659.25], [55.0, 2, 587.33], [57.5, 1, 523.25], [60.0, 0, 392.00],
-      [62.5, 1, 329.63], [65.0, 2, 392.00], [67.5, 0, 523.25], [70.0, 1, 587.33],
-      [72.5, 2, 659.25], [75.0, 0, 783.99], [77.5, 1, 880.00], [80.0, 2, 987.77],
-      [82.0, 0, 880.00], [84.0, 1, 783.99], [86.0, 2, 659.25], [88.0, 0, 587.33]
-    ]
-  },
-  {
-    bpm: 120, name: "The Four Seasons 'Winter' (Vivaldi)", instr: 'violin', gain: 0.12,
-    baseChords: [[116.54, 174.61, 233.08], [130.81, 196.00, 261.63], [110.00, 164.81, 261.63], [116.54, 174.61, 233.08]],
-    fullTimeline: [
-      [0.0, 0, 349.23], [0.4, 0, 349.23], [0.8, 1, 415.30], [1.2, 2, 466.16],
-      [1.6, 1, 415.30], [2.0, 0, 349.23], [2.4, 1, 311.13], [2.8, 0, 293.66],
-      [3.2, 2, 233.08], [3.6, 1, 233.08], [4.0, 0, 349.23], [4.8, 1, 466.16],
-      [5.5, 2, 523.25], [6.5, 1, 587.33], [8.0, 0, 698.46], [10.0, 2, 622.25],
-      [13.0, 1, 523.25], [16.0, 0, 466.16], [20.0, 2, 415.30], [24.0, 1, 349.23],
-      [28.0, 0, 311.13], [32.0, 2, 293.66], [36.0, 1, 233.08], [41.0, 0, 349.23],
-      // ── 후반부 속도 저하 해결 ──
-      [43.5, 2, 466.16], [46.0, 1, 587.33], [48.5, 0, 698.46], [51.0, 2, 783.99],
-      [53.5, 1, 880.00], [56.0, 0, 932.33], [58.5, 2, 783.99], [61.0, 1, 698.46],
-      [63.5, 0, 587.33], [66.0, 1, 466.16], [68.5, 2, 349.23], [71.0, 0, 415.30],
-      [73.5, 1, 466.16], [76.0, 2, 523.25], [78.5, 0, 587.33], [81.0, 1, 698.46],
-      [83.5, 2, 783.99], [86.0, 0, 880.00], [88.0, 1, 932.33]
-    ]
-  }
-];
-
-let padIntervalId = null;
-let currentChordIdx = 0;
-
-function startBackgroundOrchestration(si) {
-  stopBackgroundOrchestration();
-  const cfg = STAGES[si];
-  const beatDuration = 60 / cfg.bpm; 
-  const measureTime = beatDuration * 4 * 1000; 
-  currentChordIdx = 0;
-  
-  const playChordProgressive = () => {
-    if (!G.running) return;
-    const chord = cfg.baseChords[currentChordIdx % cfg.baseChords.length];
-    chord.forEach((freq) => {
-      playOrchestraNode(freq, 'string', cfg.gain * 0.45, measureTime / 1000, false);
-    });
-    currentChordIdx++;
-  };
-
-  playChordProgressive();
-  padIntervalId = setInterval(playChordProgressive, measureTime);
-}
-
-function stopBackgroundOrchestration() {
-  if (padIntervalId) { clearInterval(padIntervalId); padIntervalId = null; }
-}
-
-function genNotes(si, dur) {
-  const { fullTimeline } = STAGES[si];
-  const notes = [];
-  
-  fullTimeline.forEach(([timeOffset, lane, freq]) => {
-    const ht = FALL_DUR + timeOffset;
-    if (ht < dur - 0.2) {
-      notes.push({ lane, freq, ht, hit:false, miss:false, playedSound:false });
-    }
-  });
-  
-  return notes.sort((a,b) => a.ht - b.ht);
-}
-
-// ═══════════════════════════════════════════════
-//  GAME STATE
-// ═══════════════════════════════════════════════
-const G = {
-  stage:0, selTime:45, score:0, totalScore:0,
-  combo:0, maxCombo:0, perfects:0, goods:0, misses:0,
-  notes:[], particles:[], ripples:[], ambientPts:[], laneFx:[0,0,0],
-  running:false, gt:0, startT:null, lastT:null, raf:null,
-  isFadingOut:false, missFlash:0
-};
-
-let cv, cx, W, H;
-function setupCanvas() {
-  cv = document.getElementById('game-canvas'); if(!cv) return;
-  cx = cv.getContext('2d');
-  W = cv.width  = window.innerWidth; H = cv.height = window.innerHeight;
-}
-
-window.addEventListener('resize', () => {
-  W = window.innerWidth; H = window.innerHeight;
-  if (cv) { cv.width = W; cv.height = H; }
-  const tcv = document.getElementById('title-canvas'); if (tcv) { tcv.width = W; tcv.height = H; }
-  const ccv = document.getElementById('clear-canvas'); if (ccv) { ccv.width = W; ccv.height = H; }
+const renderTarget = new THREE.WebGLRenderTarget(innerWidth, innerHeight, {
+  depthBuffer:true,
+  colorSpace:THREE.SRGBColorSpace
 });
 
-function laneX(l) {
-  const mx = W * .1, sw = W - mx * 2;
-  return mx + (l + .5) * sw / 3;
-}
-function laneW() { return (W * .8) / 3; }
-
-function spawnParticles(lane, qual) {
-  const x = laneX(lane), y = H - HZ_H * .5;
-  const isPerfect = qual === 'PERFECT';
-  const cnt = isPerfect ? 24 : 13;
-  const col = isPerfect ? '#ff2a4a' : '#8b0018';
-  const colRgb = isPerfect ? '255,42,74' : '139,0,24';
-
-  for (let i = 0; i < cnt; i++) {
-    const a = Math.PI * 2 * i / cnt + (Math.random() - .5) * .9;
-    const sp = 55 + Math.random() * 145;
-    const isEmber = Math.random() < 0.28;
-    G.particles.push({
-      x, y,
-      vx: Math.cos(a) * sp * (0.7 + Math.random() * 0.6),
-      vy: Math.sin(a) * sp - 45 - Math.random() * 30,
-      r: isEmber ? (2.5 + Math.random() * 3.5) : (0.8 + Math.random() * 2.2),
-      life: 1,
-      dec: isEmber ? 0.014 + Math.random() * 0.01 : 0.022 + Math.random() * 0.022,
-      col, colRgb, isEmber
-    });
-  }
-
-  // Expanding ripple ring(s)
-  G.ripples.push({ x, y, r: 6, life: 1, colRgb, speed: isPerfect ? 155 : 95 });
-  if (isPerfect) {
-    G.ripples.push({ x, y, r: 2, life: 0.65, colRgb: '255,210,190', speed: 88 });
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  CORE RENDER & ENGINE LOOP
-// ═══════════════════════════════════════════════
-function initAmbientPts() {
-  G.ambientPts = Array.from({length:20}, () => ({
-    x: Math.random() * W, y: Math.random() * H,
-    vx: (Math.random() - .5) * 7,
-    vy: -3 - Math.random() * 7,
-    r: 0.4 + Math.random() * 1.1,
-    op: 0.03 + Math.random() * 0.07,
-    phase: Math.random() * Math.PI * 2,
-    drift: (Math.random() - .5) * 0.4
-  }));
-}
-
-function draw(dt) {
-  cx.clearRect(0, 0, W, H);
-  cx.fillStyle = '#050505'; cx.fillRect(0, 0, W, H);
-
-  // Beat-synced center throb
-  const beatDur = 60 / STAGES[G.stage].bpm;
-  const beatPhase = (G.gt % beatDur) / beatDur;
-  const throb = Math.sin(beatPhase * Math.PI) * 0.04;
-  const vg = cx.createRadialGradient(W*.5, H*.5, 0, W*.5, H*.5, W*.85);
-  vg.addColorStop(0, `rgba(139,0,24,${0.05 + throb})`);
-  vg.addColorStop(1, 'transparent');
-  cx.fillStyle = vg; cx.fillRect(0, 0, W, H);
-
-  const playH = H - HZ_H;
-
-  // Ambient floating embers
-  G.ambientPts.forEach(p => {
-    p.x += (p.vx + Math.sin(G.gt * 0.4 + p.phase) * p.drift) * dt;
-    p.y += p.vy * dt;
-    p.phase += dt * 0.6;
-    if (p.y < -6) { p.y = H + 4; p.x = Math.random() * W; }
-    if (p.x < -4) p.x = W + 4; if (p.x > W + 4) p.x = -4;
-    const a = p.op * (0.5 + 0.5 * Math.sin(p.phase));
-    cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    cx.fillStyle = `rgba(196,30,58,${a})`; cx.fill();
-  });
-
-  // Lane guide lines
-  for (let l = 0; l < 3; l++) {
-    const x = laneX(l);
-    const g = cx.createLinearGradient(0, 0, 0, playH);
-    g.addColorStop(0, 'rgba(42,0,8,0)');
-    g.addColorStop(1, 'rgba(196,30,58,.32)');
-    cx.strokeStyle = g; cx.lineWidth = 1.5;
-    cx.setLineDash([4, 8]); cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, playH); cx.stroke();
-    cx.setLineDash([]);
-  }
-
-  const now = G.gt;
-  const cfg = STAGES[G.stage];
-
-  // Notes
-  G.notes.forEach(n => {
-    if (n.hit || n.miss) return;
-    const tuh = n.ht - now;
-
-    if (tuh <= 0 && !n.playedSound) {
-      if (!G.isFadingOut) playOrchestraNode(n.freq, cfg.instr, cfg.gain, 0.42, false);
-      n.playedSound = true;
+const postScene = new THREE.Scene();
+const postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const postMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    tScene: { value: renderTarget.texture },
+    uResolution: { value: new THREE.Vector2(innerWidth, innerHeight) },
+    uTime: { value: 0 },
+    uMouse: { value: new THREE.Vector2(0.5, 0.5) }
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main(){
+      vUv = uv;
+      gl_Position = vec4(position.xy, 0.0, 1.0);
     }
+  `,
+  fragmentShader: `
+    uniform sampler2D tScene;
+    uniform vec2 uResolution;
+    uniform float uTime;
+    uniform vec2 uMouse;
+    varying vec2 vUv;
 
-    if (tuh > FALL_DUR + .15) return;
-    if (tuh < -(W_GOOD + .02)) {
-      n.miss = true; G.misses++; G.combo = 0; updateCombo(); showFeedback('MISS'); return;
+    void main(){
+      vec2 uv = vUv;
+      vec2 center = uMouse;
+      vec2 dir = uv - center;
+      float dist = length(dir * vec2(uResolution.x/uResolution.y, 1.0));
+      
+      if(dist > 0.0) {
+        float r_g = 0.12; 
+        if (dist < r_g) {
+          gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+          return;
+        }
+        float offset = (r_g * r_g) / (dist - r_g * 0.4);
+        uv = center + normalize(dir) * offset;
+      }
+
+      vec3 color = texture2D(tScene, uv).rgb;
+      
+      vec2 p = vUv - 0.5;
+      float d = length(p);
+      color += vec3(0.01, 0.015, 0.03) * (1.0 - d);
+      color = pow(color, vec3(0.9));
+      
+      gl_FragColor = vec4(color, 1.0);
     }
+  `
+});
+postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMaterial));
 
-    const prog = Math.max(0, Math.min(1, 1 - tuh / FALL_DUR));
-    const y = prog * playH; const x = laneX(n.lane);
-    const near = tuh < .28 && tuh > -W_GOOD;
-    const nw = laneW() * .75;
+const diskGeo = new THREE.BufferGeometry();
+const COUNT = 180000;
+const pos = new Float32Array(COUNT * 3);
+const colors = new Float32Array(COUNT * 3);
+const info = new Float32Array(COUNT * 3); 
 
-    // Fade in at birth (first 10% of fall)
-    const fadeIn = Math.min(1, prog / 0.10);
-    // Pulse glow near hit zone
-    const pulse = near ? (0.5 + 0.5 * Math.sin(G.gt * 13)) : 0;
+for(let i = 0; i < COUNT; i++) {
+  const r = 160 + Math.pow(Math.random(), 2.0) * 450;
+  const theta = Math.random() * Math.PI * 2;
+  
+  pos[i * 3] = Math.cos(theta) * r;
+  pos[i * 3 + 1] = (Math.random() - 0.5) * (4 + (r - 160) * 0.06);
+  pos[i * 3 + 2] = Math.sin(theta) * r;
 
-    cx.save();
-    cx.globalAlpha = fadeIn;
-    cx.strokeStyle = near
-      ? `rgba(255,${90 + Math.floor(pulse * 80)},100,1)`
-      : '#c41e3a';
-    cx.lineWidth = near ? (3.5 + pulse * 1.8) : 2.5;
-    cx.shadowColor = near ? '#ff2a4a' : '#8b0018';
-    cx.shadowBlur = near ? (12 + pulse * 10) : 4;
-    cx.lineCap = 'round';
-    cx.beginPath(); cx.moveTo(x - nw/2, y); cx.lineTo(x + nw/2, y); cx.stroke();
-    cx.restore();
-  });
+  const rand = Math.random();
+  info[i * 3] = r;         
+  info[i * 3 + 1] = theta;    
+  info[i * 3 + 2] = rand;     
 
-  // Particles
-  cx.save();
-  const dead = [];
-  G.particles.forEach((p, i) => {
-    p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 190 * dt; p.life -= p.dec;
-    if (p.life <= 0) { dead.push(i); return; }
-    cx.globalAlpha = p.isEmber ? p.life * 0.55 : p.life;
-    cx.beginPath(); cx.arc(p.x, p.y, Math.max(0, p.r * (p.isEmber ? 1 : p.life)), 0, Math.PI * 2);
-    cx.fillStyle = p.col; cx.fill();
-  });
-  for (let i = dead.length - 1; i >= 0; i--) G.particles.splice(dead[i], 1);
-  cx.restore();
-
-  // Ripple rings
-  cx.save();
-  G.ripples = G.ripples.filter(r => r.life > 0);
-  G.ripples.forEach(r => {
-    r.r += r.speed * dt;
-    r.life -= 2.2 * dt;
-    if (r.life <= 0) return;
-    cx.beginPath(); cx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
-    cx.strokeStyle = `rgba(${r.colRgb},${(r.life * 0.55).toFixed(3)})`;
-    cx.lineWidth = 1.5;
-    cx.stroke();
-  });
-  cx.restore();
-
-  // Lane hit FX
-  for (let l = 0; l < 3; l++) {
-    const x = laneX(l); const fx = G.laneFx[l];
-    const alpha = fx > 0 ? fx * .5 : .06;
-    const col = fx > 0 ? '255,42,74' : '139,0,24';
-    const g = cx.createRadialGradient(x, H, 0, x, H, 90);
-    g.addColorStop(0, `rgba(${col},${alpha})`); g.addColorStop(1, 'transparent');
-    cx.fillStyle = g; cx.fillRect(x - 100, H - HZ_H, 200, HZ_H);
-    if (G.laneFx[l] > 0.005) G.laneFx[l] *= 0.87; else G.laneFx[l] = 0;
-  }
-
-  // Miss edge vignette flash
-  if (G.missFlash > 0) {
-    G.missFlash -= 2.8 * dt;
-    if (G.missFlash > 0) {
-      const mf = cx.createRadialGradient(W*.5, H*.5, W*.18, W*.5, H*.5, W*.78);
-      mf.addColorStop(0, 'transparent');
-      mf.addColorStop(1, `rgba(70,0,8,${(G.missFlash * 0.6).toFixed(3)})`);
-      cx.fillStyle = mf; cx.fillRect(0, 0, W, H);
-    } else { G.missFlash = 0; }
+  const ratio = (r - 160) / 450;
+  if(ratio < 0.15) {
+    colors[i * 3] = 1.0;
+    colors[i * 3 + 1] = 0.9;
+    colors[i * 3 + 2] = 0.7;
+  } else if(ratio < 0.5) {
+    colors[i * 3] = 1.0;
+    colors[i * 3 + 1] = 0.45 - ratio * 0.2;
+    colors[i * 3 + 2] = 0.1;
+  } else {
+    colors[i * 3] = 0.3 + (1.0 - ratio) * 0.4;
+    colors[i * 3 + 1] = 0.1;
+    colors[i * 3 + 2] = 0.5 + ratio * 0.5;
   }
 }
 
-function gameLoop(ts) {
-  if (!G.running) return;
-  const dt = Math.min((ts - G.lastT) / 1000, .1);
-  G.lastT = ts; G.gt = (ts - G.startT) / 1000;
+diskGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+diskGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+diskGeo.setAttribute('aInfo', new THREE.BufferAttribute(info, 3));
 
-  const rem = Math.max(0, G.selTime - G.gt);
-  document.getElementById('h-tm').textContent = Math.ceil(rem);
-  document.getElementById('h-sc').textContent = G.score;
+const diskMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    uTime: { value: 0 },
+    uPixelRatio: { value: renderer.getPixelRatio() }
+  },
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  vertexShader: `
+    attribute vec3 aInfo;
+    uniform float uTime;
+    uniform float uPixelRatio;
+    varying vec3 vColor;
+    varying float vDistance;
 
-  draw(dt);
+    void main() {
+      vec3 p = position;
+      float r = aInfo.x;
+      float currentTheta = aInfo.y + (35.0 / r) * uTime; 
+      
+      p.x = cos(currentTheta) * r;
+      p.z = sin(currentTheta) * r;
+      p.y += sin(uTime * 1.5 + aInfo.z * 20.0) * (r * 0.015);
 
-  if (rem <= 1.0 && !G.isFadingOut) {
-    G.isFadingOut = true;
-    fadeOutAudioEngine(); 
+      vColor = color;
+      vec4 mv = modelViewMatrix * vec4(p, 1.0);
+      gl_Position = projectionMatrix * mv;
+      
+      vDistance = -mv.z;
+      gl_PointSize = (1.1 + aInfo.z * 1.6) * uPixelRatio * (600.0 / vDistance);
+    }
+  `,
+  fragmentShader: `
+    varying vec3 vColor;
+    varying float vDistance;
+
+    void main() {
+      vec2 pt = gl_PointCoord - 0.5;
+      float d = length(pt);
+      if(d > 0.5) discard;
+      
+      float core = smoothstep(0.5, 0.0, d);
+      float halo = exp(-d * 6.0);
+      float atten = min(1.0, 1200.0 / vDistance);
+      
+      gl_FragColor = vec4(vColor * (0.8 + halo * 1.2), (core * 0.22 + halo * 0.08) * atten);
+    }
+  `
+});
+
+const accretionDisk = new THREE.Points(diskGeo, diskMaterial);
+scene.add(accretionDisk);
+
+const backgroundGeo = new THREE.BufferGeometry();
+const BG_COUNT = 50000;
+const bgPos = new Float32Array(BG_COUNT * 3);
+const bgSeed = new Float32Array(BG_COUNT);
+
+for(let i = 0; i < BG_COUNT; i++) {
+  const radius = 6000 + Math.random() * 14000;
+  const u = Math.random();
+  const v = Math.random();
+  const theta = u * Math.PI * 2;
+  const phi = Math.acos(2.0 * v - 1.0);
+  
+  bgPos[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+  bgPos[i * 3 + 1] = radius * Math.cos(phi);
+  bgPos[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+  bgSeed[i] = Math.random();
+}
+backgroundGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
+backgroundGeo.setAttribute('aSeed', new THREE.BufferAttribute(bgSeed, 1));
+
+const bgMaterial = new THREE.ShaderMaterial({
+  uniforms: { uTime: { value: 0 }, uPixelRatio: { value: renderer.getPixelRatio() } },
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  vertexShader: `
+    attribute float aSeed;
+    uniform float uTime;
+    uniform float uPixelRatio;
+    varying float vAlpha;
+    void main() {
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      vAlpha = 0.3 + 0.6 * sin(uTime * (0.8 + aSeed) + aSeed * 30.0);
+      gl_PointSize = (0.8 + aSeed * 1.5) * uPixelRatio;
+    }
+  `,
+  fragmentShader: `
+    varying float vAlpha;
+    void main() {
+      float d = length(gl_PointCoord - 0.5);
+      if(d > 0.5) discard;
+      gl_FragColor = vec4(vec3(0.85, 0.92, 1.0), smoothstep(0.5, 0.0, d) * vAlpha);
+    }
+  `
+});
+const backgroundStars = new THREE.Points(backgroundGeo, bgMaterial);
+scene.add(backgroundStars);
+
+const clock = new THREE.Clock();
+const ease = (curr, targ, amt) => curr + (targ - curr) * amt;
+
+addEventListener('pointermove', e => {
+  if (isTargeting) {
+    target.x += (e.clientX / innerWidth - 0.5) * 2.5;
+    target.y += (e.clientY / innerHeight - 0.5) * 1.5;
+  } else {
+    target.x = (e.clientX / innerWidth - 0.5) * 0.8;
+    target.y = (e.clientY / innerHeight - 0.5) * 0.4;
   }
+});
+addEventListener('pointerdown', () => { isTargeting = true; });
+addEventListener('pointerup', () => { isTargeting = false; });
 
-  if (G.gt >= G.selTime) { 
-    G.running = false; 
-    setTimeout(endStage, 300); 
-    return; 
-  }
-  G.raf = requestAnimationFrame(gameLoop);
+function animate() {
+  requestAnimationFrame(animate);
+  const time = clock.getElapsedTime();
+
+  pointer.x = ease(pointer.x, target.x, 0.04);
+  pointer.y = ease(pointer.y, target.y, 0.04);
+
+  diskMaterial.uniforms.uTime.value = time;
+  bgMaterial.uniforms.uTime.value = time;
+
+  accretionDisk.rotation.y = time * 0.015;
+
+  const radius = 950 + Math.sin(time * 0.12) * 250;
+  const camX = Math.sin(time * 0.15 + pointer.x) * radius;
+  const camZ = Math.cos(time * 0.15 + pointer.x) * radius;
+  const camY = Math.sin(time * 0.08) * 200 + 100 + (pointer.y * 300);
+  
+  camera.position.set(camX, camY, camZ);
+  camera.lookAt(0, -20, 0);
+
+  renderer.setRenderTarget(renderTarget);
+  renderer.render(scene, camera);
+  renderer.setRenderTarget(null);
+
+  const screenPos = new THREE.Vector3(0, 0, 0).project(camera);
+  postMaterial.uniforms.uTime.value = time;
+  postMaterial.uniforms.uMouse.value.set(
+    (screenPos.x + 1) * 0.5,
+    (screenPos.y + 1) * 0.5
+  );
+
+  renderer.render(postScene, postCamera);
 }
 
-// ═══════════════════════════════════════════════
-//  INTERACTION
-// ═══════════════════════════════════════════════
-function hitLane(lane) {
-  if (!G.running || G.isFadingOut) return;
-  ac();
-  const hz = document.getElementById(`hz-${lane}`);
-  if(hz) {
-    hz.classList.add('tap'); clearTimeout(hz._t);
-    hz._t = setTimeout(() => hz.classList.remove('tap'), 100);
-  }
-  G.laneFx[lane] = 1;
+animate();
 
-  const now = G.gt;
-  let best = null, bestD = Infinity;
-  G.notes.forEach(n => {
-    if (n.hit || n.miss || n.lane !== lane) return;
-    const d = Math.abs(n.ht - now);
-    if (d < bestD && d < W_GOOD * 1.5) { bestD = d; best = n; }
-  });
-
-  const cfg = STAGES[G.stage];
-
-  if (!best || bestD > W_GOOD) {
-    playOrchestraNode(164.81 * (lane + 1), cfg.instr, cfg.gain * 0.25, 0.18, false);
-    return;
-  }
-
-  best.hit = true;
-  playOrchestraNode(best.freq, cfg.instr, cfg.gain, 0.45, true);
-  best.playedSound = true;
-
-  const qual = bestD <= W_PERF ? 'PERFECT' : 'GOOD';
-  const pts = (qual === 'PERFECT' ? 100 : 60) + G.combo * 2;
-  G.score += pts; G.combo++;
-  if (G.combo > G.maxCombo) G.maxCombo = G.combo;
-  if (qual === 'PERFECT') G.perfects++; else G.goods++;
-
-  updateCombo(); showFeedback(qual); spawnParticles(lane, qual);
-}
-
-function updateCombo() {
-  const w = document.getElementById('combo-wrap'); if(!w) return;
-  if (G.combo >= 2) {
-    const vEl = document.getElementById('combo-val');
-    vEl.textContent = G.combo;
-    vEl.classList.remove('popping');
-    void vEl.offsetWidth;
-    vEl.classList.add('popping');
-    w.classList.add('show');
-  } else { w.classList.remove('show'); }
-}
-
-function showFeedback(qual) {
-  const el = document.getElementById('feedback'); if(!el) return;
-  const cols = { PERFECT:'#f0e8e0', GOOD:'#c41e3a', MISS:'#3e3535' };
-  el.textContent = qual; el.style.color = cols[qual];
-  el.classList.remove('rising');
-  void el.offsetWidth;
-  el.classList.add('rising');
-  if (qual === 'MISS') G.missFlash = 0.22;
-}
-
-function showScreen(id) {
-  if (G.raf) cancelAnimationFrame(G.raf);
-  if (TRAf) cancelAnimationFrame(TRAf);
-  if (CRAf) cancelAnimationFrame(CRAf);
-  stopBackgroundOrchestration();
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id)?.classList.add('active');
-}
-
-function clickNav(id) {
-  ac(); sMenuClick(); showScreen(id); if (id === 'sc-title') initTitleAnim();
-}
-
-function selTime(sec, btn) {
-  ac(); sMenuClick(); G.selTime = sec;
-  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('sel'));
-  btn.classList.add('sel'); document.getElementById('start-btn').disabled = false;
-}
-
-function clickStart() {
-  ac(); sMenuClick(); G.stage = 0; G.totalScore = 0; startStage();
-}
-function clickRetry() { ac(); sMenuClick(); startStage(); }
-function clickNext() {
-  ac(); sMenuClick();
-  if (G.stage >= STAGES.length - 1) showClear();
-  else { G.stage++; startStage(); }
-}
-function clickPlayAgain() { ac(); sMenuClick(); showScreen('sc-time'); }
-
-function startStage() {
-  const si = G.stage; const cfg = STAGES[si];
-  if (!cfg) { showClear(); return; }
-
-  resetAudioEngineVolume();
-
-  Object.assign(G, { score:0, combo:0, maxCombo:0, perfects:0, goods:0, misses:0, particles:[], ripples:[], laneFx:[0,0,0], running:false, gt:0, isFadingOut:false, missFlash:0 });
-  G.notes = genNotes(si, G.selTime);
-
-  document.getElementById('h-stg').textContent = `STG ${String(si+1).padStart(2,'0')}`;
-  document.getElementById('h-nm').textContent = cfg.name;
-  document.getElementById('h-sc').textContent = '0';
-  document.getElementById('h-tm').textContent = G.selTime;
-  document.getElementById('combo-wrap').classList.remove('show');
-
-  document.getElementById('si-num').textContent = `STAGE ${String(si+1).padStart(2,'0')}`;
-  document.getElementById('si-name').textContent = cfg.name;
-  document.getElementById('si-bpm').textContent = `${cfg.bpm} BPM`;
-
-  setupCanvas(); initAmbientPts(); showScreen('sc-game');
-  const intro = document.getElementById('stage-intro'); intro.classList.add('show');
-
-  setTimeout(() => {
-    intro.classList.remove('show');
-    G.running = true; G.startT = G.lastT = performance.now();
-    startBackgroundOrchestration(si); 
-    G.raf = requestAnimationFrame(gameLoop);
-  }, 2000);
-}
-
-function endStage() {
-  G.running = false; stopBackgroundOrchestration(); G.totalScore += G.score;
-  document.getElementById('r-stg').textContent = `STAGE ${G.stage + 1} COMPLETE`;
-  document.getElementById('r-sc').textContent = G.score;
-  document.getElementById('r-perf').textContent = G.perfects;
-  document.getElementById('r-good').textContent = G.goods;
-  document.getElementById('r-miss').textContent = G.misses;
-  document.getElementById('r-cmb').textContent = G.maxCombo;
-  document.getElementById('next-btn').textContent = G.stage >= STAGES.length - 1 ? 'FINAL RESULTS' : 'NEXT STAGE';
-  showScreen('sc-result');
-}
-
-function showClear() {
-  document.getElementById('clr-sc').textContent = `FINAL SCORE: ${G.totalScore.toLocaleString()}`;
-  showScreen('sc-clear'); initClearAnim();
-}
-
-function setupInput() {
-  document.querySelectorAll('.hz').forEach(hz => {
-    const lane = parseInt(hz.dataset.lane);
-    hz.addEventListener('touchstart', e => { e.preventDefault(); hitLane(lane); }, {passive:false});
-    hz.addEventListener('mousedown', () => hitLane(lane));
-  });
-  document.addEventListener('keydown', e => {
-    if (e.repeat) return;
-    const m = { 'a':0,'A':0,'s':1,'S':1,'d':2,'D':2,'j':0,'k':1,'l':2,'ArrowLeft':0,'ArrowDown':1,'ArrowRight':2 };
-    if (m[e.key] !== undefined) hitLane(m[e.key]);
-  });
-}
-
-// ═══════════════════════════════════════════════
-//  VISUAL EFFECTS
-// ═══════════════════════════════════════════════
-let TCV, TCX, TRAf, TPts=[];
-function initTitleAnim() {
-  TCV = document.getElementById('title-canvas'); if(!TCV) return;
-  TCX = TCV.getContext('2d'); TCV.width = window.innerWidth; TCV.height = window.innerHeight;
-  TPts = Array.from({length:38}, () => ({
-    x: Math.random()*TCV.width, y: Math.random()*TCV.height,
-    vx: (Math.random()-.5)*.3, vy: -.08 - Math.random()*.25,
-    r: 0.6+Math.random()*1.8, op: 0.1+Math.random()*.7,
-    phase: Math.random()*Math.PI*2, drift: (Math.random()-.5)*0.3
-  }));
-  titleLoop();
-}
-function titleLoop() {
-  if (!document.getElementById('sc-title').classList.contains('active')) return;
-  TCX.clearRect(0,0,TCV.width,TCV.height);
-  const t = performance.now() / 1000;
-  TPts.forEach(p => {
-    p.x += (p.vx + Math.sin(t*0.3 + p.phase) * p.drift) * 0.5;
-    p.y += p.vy;
-    if(p.y < -5) { p.y = TCV.height+5; p.x = Math.random()*TCV.width; }
-    if(p.x < -5) p.x = TCV.width+5; if(p.x > TCV.width+5) p.x = -5;
-    const breath = 0.5 + 0.5 * Math.sin(t * 0.8 + p.phase);
-    TCX.beginPath(); TCX.arc(p.x, p.y, p.r, 0, Math.PI*2);
-    TCX.fillStyle = `rgba(196,30,58,${p.op * breath * 0.45})`; TCX.fill();
-  });
-  TRAf = requestAnimationFrame(titleLoop);
-}
-
-let CCV, CCX, CRAf, CPts=[];
-function initClearAnim() {
-  CCV = document.getElementById('clear-canvas'); if(!CCV) return;
-  CCX = CCV.getContext('2d'); CCV.width = window.innerWidth; CCV.height = window.innerHeight;
-  CPts = Array.from({length:40}, () => ({
-    x: Math.random()*CCV.width, y: CCV.height+Math.random()*20,
-    vx: (Math.random()-.5)*.4, vy: -.3 - Math.random()*0.5, r: 1+Math.random()*2, op: .4+Math.random()*.5
-  }));
-  clearLoop();
-}
-function clearLoop() {
-  if (!document.getElementById('sc-clear').classList.contains('active')) return;
-  CCX.fillStyle = 'rgba(5,5,5,.05)'; CCX.fillRect(0,0,CCV.width,CCV.height);
-  CPts.forEach(p => {
-    p.x += p.vx; p.y += p.vy; if(p.y < -5) { p.y = CCV.height+5; p.x = Math.random()*CCV.width; }
-    CCX.beginPath(); CCX.arc(p.x, p.y, p.r, 0, Math.PI*2);
-    CCX.fillStyle = `rgba(255,42,74,${p.op*.5})`; CCX.fill();
-  });
-  CRAf = requestAnimationFrame(clearLoop);
-}
-
-window.addEventListener('load', () => { initTitleAnim(); setupInput(); });
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  renderTarget.setSize(innerWidth, innerHeight);
+  postMaterial.uniforms.uResolution.value.set(innerWidth, innerHeight);
+  diskMaterial.uniforms.uPixelRatio.value = renderer.getPixelRatio();
+  bgMaterial.uniforms.uPixelRatio.value = renderer.getPixelRatio();
+});
 </script>
 </body>
 </html>
