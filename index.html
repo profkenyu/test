@@ -1,349 +1,215 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Singularity - Black Hole Voyage</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Event Horizon Cathedral Museum Edition v3</title>
 <style>
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#000002;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  touch-action:none;
-}
-canvas{
-  display:block;
-  width:100%;
-  height:100%;
-}
-#title{
-    position:fixed;
-    top:24px;
-    left:24px;
-    color:rgba(255,255,255,.7);
-    letter-spacing:.25em;
-    font-size:12px;
-    pointer-events:none;
-    right:120px;
-    z-index:10;
-}
-#title span{
-    display:block;
-    font-size:28px;
-    font-weight:200;
-    margin-bottom:6px;
-    color:#fff;
-}
-#back-btn{
-    position:fixed;
-    top:24px;
-    right:24px;
-    color:rgba(255,255,255,.5);
-    text-decoration:none;
-    font-size:12px;
-    letter-spacing:.25em;
-    border:1px solid rgba(255,255,255,.2);
-    padding:8px 16px;
-    border-radius:4px;
-    transition:all .3s ease;
-    z-index:10;
-}
-#back-btn:hover{
-    color:rgba(255,255,255,1);
-    background:rgba(255,255,255,.1);
-    border-color:rgba(255,255,255,.5);
-}
-@media (max-width:640px){
-  #title { top:20px; left:20px; right:100px; }
-  #title span { font-size:18px; margin-bottom:4px; }
-  #title { font-size:10px; letter-spacing:.15em; }
-  #back-btn { top:20px; right:20px; padding:6px 12px; font-size:10px; }
-}
+html,body{margin:0;overflow:hidden;background:#000;height:100%}
+canvas{display:block}
+#hud{
+position:fixed;left:30px;top:25px;color:#fff;
+font-family:system-ui,sans-serif;letter-spacing:.25em;
+opacity:.85;pointer-events:none}
+#hud h1{margin:0;font-weight:200;font-size:34px}
+#hud div{font-size:11px}
 </style>
 </head>
 <body>
-<div id="title">
-  <span>SINGULARITY Voyager</span>
-  GRAVITATIONAL LENSING / ACCRETION DISK · Drag to Orbit
+<div id="hud">
+<h1>EVENT HORIZON CATHEDRAL</h1>
+<div>MUSEUM EDITION V3 · PHOTON SPHERE · KERR DRIFT</div>
 </div>
-<a href="index.html" id="back-btn">BACK</a>
 
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-const pointer = new THREE.Vector2();
-const target = new THREE.Vector2();
-let isTargeting = false;
+const scene=new THREE.Scene();
+scene.fog=new THREE.FogExp2(0x000000,0.00025);
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 40000);
-camera.position.set(0, 150, 800);
-
-const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(innerWidth, innerHeight);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
+const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,0.1,120000);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const renderTarget = new THREE.WebGLRenderTarget(innerWidth, innerHeight, {
-  depthBuffer:true,
-  colorSpace:THREE.SRGBColorSpace
+// Black Hole
+const blackHole=new THREE.Mesh(
+ new THREE.SphereGeometry(90,128,128),
+ new THREE.MeshBasicMaterial({color:0x000000})
+);
+scene.add(blackHole);
+
+// Photon sphere
+const photon=new THREE.Mesh(
+ new THREE.TorusGeometry(155,8,32,512),
+ new THREE.MeshBasicMaterial({color:0xfff6d5})
+);
+photon.rotation.x=Math.PI/2;
+scene.add(photon);
+
+// Einstein ring
+const einstein=new THREE.Mesh(
+ new THREE.TorusGeometry(260,2,16,512),
+ new THREE.MeshBasicMaterial({color:0x88bbff,transparent:true,opacity:.4})
+);
+einstein.rotation.x=Math.PI/2;
+scene.add(einstein);
+
+// Relativistic jet
+const jetGeo=new THREE.CylinderGeometry(10,70,12000,16,1,true);
+const jetMat=new THREE.MeshBasicMaterial({
+color:0x99ccff,transparent:true,opacity:.08
 });
+const jetA=new THREE.Mesh(jetGeo,jetMat);
+const jetB=new THREE.Mesh(jetGeo,jetMat);
+jetA.position.y=6000;
+jetB.position.y=-6000;
+scene.add(jetA,jetB);
 
-const postScene = new THREE.Scene();
-const postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-const postMaterial = new THREE.ShaderMaterial({
-  uniforms: {
-    tScene: { value: renderTarget.texture },
-    uResolution: { value: new THREE.Vector2(innerWidth, innerHeight) },
-    uTime: { value: 0 },
-    uMouse: { value: new THREE.Vector2(0.5, 0.5) }
-  },
-  vertexShader: `
-    varying vec2 vUv;
-    void main(){
-      vUv = uv;
-      gl_Position = vec4(position.xy, 0.0, 1.0);
-    }
-  `,
-  fragmentShader: `
-    uniform sampler2D tScene;
-    uniform vec2 uResolution;
-    uniform float uTime;
-    uniform vec2 uMouse;
-    varying vec2 vUv;
+// Accretion disk
+const COUNT=420000;
+const pos=new Float32Array(COUNT*3);
+const info=new Float32Array(COUNT*3);
 
-    void main(){
-      vec2 uv = vUv;
-      vec2 center = uMouse;
-      vec2 dir = uv - center;
-      float dist = length(dir * vec2(uResolution.x/uResolution.y, 1.0));
-      
-      if(dist > 0.0) {
-        float r_g = 0.12; 
-        if (dist < r_g) {
-          gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-          return;
-        }
-        float offset = (r_g * r_g) / (dist - r_g * 0.4);
-        uv = center + normalize(dir) * offset;
-      }
+for(let i=0;i<COUNT;i++){
+ let r=180+Math.pow(Math.random(),1.7)*5000;
+ let a=Math.random()*Math.PI*2;
 
-      vec3 color = texture2D(tScene, uv).rgb;
-      
-      vec2 p = vUv - 0.5;
-      float d = length(p);
-      color += vec3(0.01, 0.015, 0.03) * (1.0 - d);
-      color = pow(color, vec3(0.9));
-      
-      gl_FragColor = vec4(color, 1.0);
-    }
-  `
-});
-postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMaterial));
+ pos[i*3]=Math.cos(a)*r;
+ pos[i*3+1]=(Math.random()-0.5)*(r*0.08);
+ pos[i*3+2]=Math.sin(a)*r;
 
-const diskGeo = new THREE.BufferGeometry();
-const COUNT = 180000;
-const pos = new Float32Array(COUNT * 3);
-const colors = new Float32Array(COUNT * 3);
-const info = new Float32Array(COUNT * 3); 
-
-for(let i = 0; i < COUNT; i++) {
-  const r = 160 + Math.pow(Math.random(), 2.0) * 450;
-  const theta = Math.random() * Math.PI * 2;
-  
-  pos[i * 3] = Math.cos(theta) * r;
-  pos[i * 3 + 1] = (Math.random() - 0.5) * (4 + (r - 160) * 0.06);
-  pos[i * 3 + 2] = Math.sin(theta) * r;
-
-  const rand = Math.random();
-  info[i * 3] = r;         
-  info[i * 3 + 1] = theta;    
-  info[i * 3 + 2] = rand;     
-
-  const ratio = (r - 160) / 450;
-  if(ratio < 0.15) {
-    colors[i * 3] = 1.0;
-    colors[i * 3 + 1] = 0.9;
-    colors[i * 3 + 2] = 0.7;
-  } else if(ratio < 0.5) {
-    colors[i * 3] = 1.0;
-    colors[i * 3 + 1] = 0.45 - ratio * 0.2;
-    colors[i * 3 + 2] = 0.1;
-  } else {
-    colors[i * 3] = 0.3 + (1.0 - ratio) * 0.4;
-    colors[i * 3 + 1] = 0.1;
-    colors[i * 3 + 2] = 0.5 + ratio * 0.5;
-  }
+ info[i*3]=r;
+ info[i*3+1]=a;
+ info[i*3+2]=Math.random();
 }
 
-diskGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-diskGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-diskGeo.setAttribute('aInfo', new THREE.BufferAttribute(info, 3));
+const geo=new THREE.BufferGeometry();
+geo.setAttribute("position",new THREE.BufferAttribute(pos,3));
+geo.setAttribute("aInfo",new THREE.BufferAttribute(info,3));
 
-const diskMaterial = new THREE.ShaderMaterial({
-  uniforms: {
-    uTime: { value: 0 },
-    uPixelRatio: { value: renderer.getPixelRatio() }
-  },
-  transparent: true,
-  depthWrite: false,
-  blending: THREE.AdditiveBlending,
-  vertexShader: `
-    attribute vec3 aInfo;
-    uniform float uTime;
-    uniform float uPixelRatio;
-    varying vec3 vColor;
-    varying float vDistance;
+const mat=new THREE.ShaderMaterial({
+transparent:true,
+depthWrite:false,
+blending:THREE.AdditiveBlending,
+uniforms:{uTime:{value:0}},
+vertexShader:`
+attribute vec3 aInfo;
+uniform float uTime;
+varying vec3 vColor;
 
-    void main() {
-      vec3 p = position;
-      float r = aInfo.x;
-      float currentTheta = aInfo.y + (35.0 / r) * uTime; 
-      
-      p.x = cos(currentTheta) * r;
-      p.z = sin(currentTheta) * r;
-      p.y += sin(uTime * 1.5 + aInfo.z * 20.0) * (r * 0.015);
+void main(){
 
-      vColor = color;
-      vec4 mv = modelViewMatrix * vec4(p, 1.0);
-      gl_Position = projectionMatrix * mv;
-      
-      vDistance = -mv.z;
-      gl_PointSize = (1.1 + aInfo.z * 1.6) * uPixelRatio * (600.0 / vDistance);
-    }
-  `,
-  fragmentShader: `
-    varying vec3 vColor;
-    varying float vDistance;
+ float r=aInfo.x;
 
-    void main() {
-      vec2 pt = gl_PointCoord - 0.5;
-      float d = length(pt);
-      if(d > 0.5) discard;
-      
-      float core = smoothstep(0.5, 0.0, d);
-      float halo = exp(-d * 6.0);
-      float atten = min(1.0, 1200.0 / vDistance);
-      
-      gl_FragColor = vec4(vColor * (0.8 + halo * 1.2), (core * 0.22 + halo * 0.08) * atten);
-    }
-  `
-});
+ // Kepler rotation
+ float theta=aInfo.y + (35.0/r)*uTime;
 
-const accretionDisk = new THREE.Points(diskGeo, diskMaterial);
-scene.add(accretionDisk);
+ vec3 p;
+ p.x=cos(theta)*r;
+ p.z=sin(theta)*r;
 
-const backgroundGeo = new THREE.BufferGeometry();
-const BG_COUNT = 50000;
-const bgPos = new Float32Array(BG_COUNT * 3);
-const bgSeed = new Float32Array(BG_COUNT);
+ // Kerr-like frame dragging
+ float drag=exp(-r/450.0);
+ theta += drag*uTime*0.8;
 
-for(let i = 0; i < BG_COUNT; i++) {
-  const radius = 6000 + Math.random() * 14000;
-  const u = Math.random();
-  const v = Math.random();
-  const theta = u * Math.PI * 2;
-  const phi = Math.acos(2.0 * v - 1.0);
-  
-  bgPos[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-  bgPos[i * 3 + 1] = radius * Math.cos(phi);
-  bgPos[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
-  bgSeed[i] = Math.random();
+ p.x=cos(theta)*r;
+ p.z=sin(theta)*r;
+
+ p.y=sin(theta*5.0+aInfo.z*20.0)*r*0.02;
+
+ if(r<450.0) vColor=vec3(1.0,0.98,0.90);
+ else if(r<1800.0) vColor=vec3(1.0,0.42,0.08);
+ else vColor=vec3(0.15,0.45,1.0);
+
+ vec4 mv=modelViewMatrix*vec4(p,1.0);
+
+ gl_Position=projectionMatrix*mv;
+ gl_PointSize=max(1.0,4200.0/(-mv.z));
 }
-backgroundGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
-backgroundGeo.setAttribute('aSeed', new THREE.BufferAttribute(bgSeed, 1));
-
-const bgMaterial = new THREE.ShaderMaterial({
-  uniforms: { uTime: { value: 0 }, uPixelRatio: { value: renderer.getPixelRatio() } },
-  transparent: true,
-  depthWrite: false,
-  blending: THREE.AdditiveBlending,
-  vertexShader: `
-    attribute float aSeed;
-    uniform float uTime;
-    uniform float uPixelRatio;
-    varying float vAlpha;
-    void main() {
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      vAlpha = 0.3 + 0.6 * sin(uTime * (0.8 + aSeed) + aSeed * 30.0);
-      gl_PointSize = (0.8 + aSeed * 1.5) * uPixelRatio;
-    }
-  `,
-  fragmentShader: `
-    varying float vAlpha;
-    void main() {
-      float d = length(gl_PointCoord - 0.5);
-      if(d > 0.5) discard;
-      gl_FragColor = vec4(vec3(0.85, 0.92, 1.0), smoothstep(0.5, 0.0, d) * vAlpha);
-    }
-  `
+`,
+fragmentShader:`
+varying vec3 vColor;
+void main(){
+ float d=length(gl_PointCoord-0.5);
+ if(d>0.5) discard;
+ float a=smoothstep(.5,.0,d);
+ gl_FragColor=vec4(vColor,a*0.85);
+}
+`
 });
-const backgroundStars = new THREE.Points(backgroundGeo, bgMaterial);
-scene.add(backgroundStars);
 
-const clock = new THREE.Clock();
-const ease = (curr, targ, amt) => curr + (targ - curr) * amt;
+scene.add(new THREE.Points(geo,mat));
 
-addEventListener('pointermove', e => {
-  if (isTargeting) {
-    target.x += (e.clientX / innerWidth - 0.5) * 2.5;
-    target.y += (e.clientY / innerHeight - 0.5) * 1.5;
-  } else {
-    target.x = (e.clientX / innerWidth - 0.5) * 0.8;
-    target.y = (e.clientY / innerHeight - 0.5) * 0.4;
-  }
-});
-addEventListener('pointerdown', () => { isTargeting = true; });
-addEventListener('pointerup', () => { isTargeting = false; });
+// Volumetric nebula shell
+const nebula=new THREE.Mesh(
+ new THREE.SphereGeometry(9000,64,64),
+ new THREE.MeshBasicMaterial({
+ color:0x223366,
+ transparent:true,
+ opacity:0.03,
+ side:THREE.BackSide
+ })
+);
+scene.add(nebula);
 
-function animate() {
-  requestAnimationFrame(animate);
-  const time = clock.getElapsedTime();
+// Star field
+const starsGeo=new THREE.BufferGeometry();
+const starCount=90000;
+const s=new Float32Array(starCount*3);
 
-  pointer.x = ease(pointer.x, target.x, 0.04);
-  pointer.y = ease(pointer.y, target.y, 0.04);
+for(let i=0;i<starCount;i++){
+ let r=18000+Math.random()*50000;
+ let a=Math.random()*Math.PI*2;
+ let b=Math.acos(Math.random()*2-1);
 
-  diskMaterial.uniforms.uTime.value = time;
-  bgMaterial.uniforms.uTime.value = time;
-
-  accretionDisk.rotation.y = time * 0.015;
-
-  const radius = 950 + Math.sin(time * 0.12) * 250;
-  const camX = Math.sin(time * 0.15 + pointer.x) * radius;
-  const camZ = Math.cos(time * 0.15 + pointer.x) * radius;
-  const camY = Math.sin(time * 0.08) * 200 + 100 + (pointer.y * 300);
-  
-  camera.position.set(camX, camY, camZ);
-  camera.lookAt(0, -20, 0);
-
-  renderer.setRenderTarget(renderTarget);
-  renderer.render(scene, camera);
-  renderer.setRenderTarget(null);
-
-  const screenPos = new THREE.Vector3(0, 0, 0).project(camera);
-  postMaterial.uniforms.uTime.value = time;
-  postMaterial.uniforms.uMouse.value.set(
-    (screenPos.x + 1) * 0.5,
-    (screenPos.y + 1) * 0.5
-  );
-
-  renderer.render(postScene, postCamera);
+ s[i*3]=r*Math.sin(b)*Math.cos(a);
+ s[i*3+1]=r*Math.cos(b);
+ s[i*3+2]=r*Math.sin(b)*Math.sin(a);
 }
 
+starsGeo.setAttribute("position",new THREE.BufferAttribute(s,3));
+scene.add(new THREE.Points(
+ starsGeo,
+ new THREE.PointsMaterial({size:2,color:0xffffff})
+));
+
+const clock=new THREE.Clock();
+
+function animate(){
+ requestAnimationFrame(animate);
+
+ const t=clock.getElapsedTime();
+ mat.uniforms.uTime.value=t;
+
+ photon.rotation.z=t*0.7;
+ einstein.rotation.z=-t*0.2;
+
+ // Event Horizon Transit
+ const radius=900 + Math.sin(t*0.06)*700;
+ const ang=t*0.18;
+
+ camera.position.set(
+  Math.cos(ang)*radius,
+  Math.sin(t*0.14)*180,
+  Math.sin(ang)*radius
+ );
+
+ camera.lookAt(
+  Math.cos(t*0.35)*30,
+  Math.sin(t*0.22)*10,
+  Math.sin(t*0.35)*30
+ );
+
+ renderer.render(scene,camera);
+}
 animate();
 
-addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-  renderTarget.setSize(innerWidth, innerHeight);
-  postMaterial.uniforms.uResolution.value.set(innerWidth, innerHeight);
-  diskMaterial.uniforms.uPixelRatio.value = renderer.getPixelRatio();
-  bgMaterial.uniforms.uPixelRatio.value = renderer.getPixelRatio();
+addEventListener('resize',()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
 });
 </script>
 </body>
