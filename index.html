@@ -1,476 +1,1005 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0,user-scalable=no">
 
-<title>Frenet–Serret Cathedral | Exhibition Edition</title>
+<title>Interstellar Black Hole — Slit Scan Edition</title>
 
 <style>
+
 html,body{
-    margin:0;
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#02030a;
-    touch-action:none;
-    font-family:Arial,sans-serif;
+margin:0;
+width:100%;
+height:100%;
+overflow:hidden;
+background:#000;
+touch-action:none;
+font-family:Arial,sans-serif;
 }
 
 canvas{
-    display:block;
+display:block;
+width:100%;
+height:100%;
 }
 
-#ui{
-    position:fixed;
-    top:14px;
-    left:14px;
-    color:rgba(255,255,255,.85);
-    background:rgba(0,0,0,.35);
-    padding:12px 14px;
-    border-radius:12px;
-    backdrop-filter:blur(12px);
-    font-size:12px;
-    letter-spacing:2px;
-    z-index:10;
-    line-height:1.7;
+#hud{
+position:fixed;
+top:20px;
+left:20px;
+z-index:20;
+color:white;
+pointer-events:none;
+letter-spacing:.24em;
+line-height:1.8;
+font-size:11px;
+text-shadow:0 0 14px rgba(0,0,0,.85);
 }
 
-#signature{
-    position:fixed;
-    right:14px;
-    bottom:10px;
-    color:rgba(255,255,255,.35);
-    font-size:11px;
-    letter-spacing:2px;
-    z-index:10;
+#hud .title{
+font-size:30px;
+font-weight:700;
+margin-bottom:10px;
+letter-spacing:.12em;
 }
+
+#hud .mode{
+color:#ff8866;
+}
+
+#vignette{
+position:fixed;
+inset:0;
+pointer-events:none;
+
+background:
+radial-gradient(
+circle at center,
+rgba(0,0,0,0) 0%,
+rgba(0,0,0,.25) 48%,
+rgba(0,0,0,.72) 78%,
+rgba(0,0,0,.98) 100%
+);
+
+mix-blend-mode:multiply;
+}
+
 </style>
 </head>
 
 <body>
 
-<div id="ui">
-FRENET–SERRET CATHEDRAL<br>
-EXHIBITION EDITION<br><br>
+<div id="hud">
 
-Drag : Rotate<br>
-Wheel / Pinch : Zoom<br>
-Double Tap : Curvature Burst
+<div class="title">
+SLIT-SCAN EDITION
 </div>
 
-<div id="signature">
-Curvature Generates Space
+<div>
+INTERSTELLAR BLACK HOLE
 </div>
+
+<div class="mode">
+EVENT HORIZON DESCENT
+</div>
+
+</div>
+
+<div id="vignette"></div>
 
 <script type="module">
 
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js";
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/controls/OrbitControls.js";
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js";
 
-const scene = new THREE.Scene();
+/* =========================================================
+CORE
+========================================================= */
 
-scene.fog = new THREE.FogExp2(0x040510,0.022);
+const scene =
+new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(
-    60,
-    window.innerWidth/window.innerHeight,
-    0.1,
-    2000
+const camera =
+new THREE.PerspectiveCamera(
+60,
+window.innerWidth/window.innerHeight,
+0.1,
+200000
 );
 
-camera.position.set(0,8,26);
+camera.position.set(0,180,2600);
 
-const renderer = new THREE.WebGLRenderer({
-    antialias:true,
-    powerPreference:"high-performance"
+const renderer =
+new THREE.WebGLRenderer({
+antialias:true,
+powerPreference:"high-performance"
 });
 
-renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
+renderer.setPixelRatio(
+Math.min(window.devicePixelRatio,2)
 );
 
-renderer.setPixelRatio(
-    Math.min(window.devicePixelRatio,2)
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
 );
+
+renderer.outputColorSpace =
+THREE.SRGBColorSpace;
 
 document.body.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(
-    camera,
-    renderer.domElement
-);
+const clock =
+new THREE.Clock();
 
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
+/* =========================================================
+POINTER
+========================================================= */
 
-scene.add(
-    new THREE.AmbientLight(0xffffff,1.4)
-);
+const pointer = {
+x:0,
+y:0,
+tx:0,
+ty:0
+};
 
-const pointLight = new THREE.PointLight(
-    0xffffff,
-    2,
-    300
-);
+window.addEventListener("pointermove",e=>{
 
-pointLight.position.set(0,30,20);
-scene.add(pointLight);
+pointer.tx =
+(e.clientX/window.innerWidth-.5);
 
-const cathedral = new THREE.Group();
-scene.add(cathedral);
+pointer.ty =
+(e.clientY/window.innerHeight-.5);
 
-let curveLine;
-let normalGroup = new THREE.Group();
-let binormalGroup = new THREE.Group();
-
-cathedral.add(normalGroup);
-cathedral.add(binormalGroup);
-
-const PARTICLES = 28000;
-
-const particleGeo = new THREE.BufferGeometry();
-
-const positions = new Float32Array(PARTICLES*3);
-const colors = new Float32Array(PARTICLES*3);
-
-particleGeo.setAttribute(
-    "position",
-    new THREE.BufferAttribute(positions,3)
-);
-
-particleGeo.setAttribute(
-    "color",
-    new THREE.BufferAttribute(colors,3)
-);
-
-const particleMat = new THREE.PointsMaterial({
-    size:0.06,
-    transparent:true,
-    opacity:0.95,
-    vertexColors:true,
-    blending:THREE.AdditiveBlending,
-    depthWrite:false
 });
 
-const particles = new THREE.Points(
-    particleGeo,
-    particleMat
+window.addEventListener("touchmove",e=>{
+
+const t = e.touches[0];
+
+pointer.tx =
+(t.clientX/window.innerWidth-.5);
+
+pointer.ty =
+(t.clientY/window.innerHeight-.5);
+
+},{passive:true});
+
+function lerp(a,b,n){
+return a+(b-a)*n;
+}
+
+/* =========================================================
+GLOW TEXTURE
+========================================================= */
+
+function createGlowTexture(){
+
+const canvas =
+document.createElement("canvas");
+
+canvas.width = 128;
+canvas.height = 128;
+
+const ctx =
+canvas.getContext("2d");
+
+const g =
+ctx.createRadialGradient(
+64,64,0,
+64,64,64
 );
 
-cathedral.add(particles);
+g.addColorStop(0,"rgba(255,255,255,1)");
+g.addColorStop(.18,"rgba(255,255,255,.9)");
+g.addColorStop(.5,"rgba(255,255,255,.2)");
+g.addColorStop(1,"rgba(255,255,255,0)");
 
-let burst = 0;
+ctx.fillStyle = g;
+ctx.fillRect(0,0,128,128);
 
-function curve(s,t){
+return new THREE.CanvasTexture(canvas);
 
-    const R =
-        5 +
-        1.2*Math.sin(s*3+t*0.4);
-
-    const x =
-        Math.cos(s)*R;
-
-    const y =
-        Math.sin(s)*R;
-
-    const z =
-        3*Math.sin(s*2+t*0.3);
-
-    return new THREE.Vector3(x,y,z);
 }
 
-function tangent(s,t){
+const glowTexture =
+createGlowTexture();
 
-    const e = 0.001;
+/* =========================================================
+STARFIELD
+========================================================= */
 
-    const p1 = curve(s,t);
-    const p2 = curve(s+e,t);
+function createStars(
+count,
+radius,
+size,
+color
+){
 
-    return p2.sub(p1).normalize();
+const geo =
+new THREE.BufferGeometry();
+
+const pos =
+new Float32Array(count*3);
+
+for(let i=0;i<count;i++){
+
+const r =
+radius *
+(Math.random()*0.9 + 0.1);
+
+const theta =
+Math.random()*Math.PI*2;
+
+const phi =
+Math.acos(
+2*Math.random()-1
+);
+
+pos[i*3] =
+r*Math.sin(phi)*Math.cos(theta);
+
+pos[i*3+1] =
+r*Math.cos(phi);
+
+pos[i*3+2] =
+r*Math.sin(phi)*Math.sin(theta);
+
 }
 
-function normal(s,t){
+geo.setAttribute(
+"position",
+new THREE.BufferAttribute(pos,3)
+);
 
-    const e = 0.001;
+const mat =
+new THREE.PointsMaterial({
 
-    const t1 = tangent(s,t);
-    const t2 = tangent(s+e,t);
+size:size,
+color:color,
+transparent:true,
+opacity:.95,
+depthWrite:false,
+blending:THREE.AdditiveBlending
 
-    return t2.sub(t1).normalize();
+});
+
+const points =
+new THREE.Points(geo,mat);
+
+scene.add(points);
+
+return points;
+
 }
 
-function binormal(tan,nor){
+const starsNear =
+createStars(
+6000,
+12000,
+5,
+0xffffff
+);
 
-    return new THREE.Vector3()
-        .crossVectors(tan,nor)
-        .normalize();
+const starsMid =
+createStars(
+12000,
+26000,
+2.5,
+0xbfd4ff
+);
+
+const starsFar =
+createStars(
+22000,
+70000,
+1.2,
+0x88aaff
+);
+
+/* =========================================================
+NEBULA
+========================================================= */
+
+function createNebula(
+count,
+radius,
+size,
+color,
+opacity
+){
+
+const geo =
+new THREE.BufferGeometry();
+
+const pos =
+new Float32Array(count*3);
+
+const colors =
+new Float32Array(count*3);
+
+for(let i=0;i<count;i++){
+
+const r =
+radius *
+(Math.random()*0.88 + 0.12);
+
+const theta =
+Math.random()*Math.PI*2;
+
+const phi =
+Math.acos(
+2*Math.random()-1
+);
+
+pos[i*3] =
+r*Math.sin(phi)*Math.cos(theta);
+
+pos[i*3+1] =
+r*Math.cos(phi)*0.35;
+
+pos[i*3+2] =
+r*Math.sin(phi)*Math.sin(theta);
+
+const c =
+new THREE.Color(color);
+
+const v =
+0.55 + Math.random()*0.45;
+
+colors[i*3] = c.r*v;
+colors[i*3+1] = c.g*v;
+colors[i*3+2] = c.b*v;
+
 }
 
-function build(time){
+geo.setAttribute(
+"position",
+new THREE.BufferAttribute(pos,3)
+);
 
-    if(curveLine){
-        cathedral.remove(curveLine);
-    }
+geo.setAttribute(
+"color",
+new THREE.BufferAttribute(colors,3)
+);
 
-    while(normalGroup.children.length){
-        normalGroup.remove(normalGroup.children[0]);
-    }
+const mat =
+new THREE.PointsMaterial({
 
-    while(binormalGroup.children.length){
-        binormalGroup.remove(binormalGroup.children[0]);
-    }
+size:size,
+vertexColors:true,
+transparent:true,
+opacity:opacity,
+map:glowTexture,
+depthWrite:false,
+blending:THREE.AdditiveBlending
 
-    const pts = [];
+});
 
-    for(let i=0;i<1800;i++){
+const points =
+new THREE.Points(geo,mat);
 
-        const s = i*0.018;
+scene.add(points);
 
-        pts.push(
-            curve(s,time)
-        );
-    }
+return points;
 
-    const geo =
-        new THREE.BufferGeometry()
-        .setFromPoints(pts);
-
-    const lineColors = [];
-
-    for(let i=0;i<pts.length;i++){
-
-        const hue =
-            (i/pts.length + time*0.03)%1;
-
-        const c =
-            new THREE.Color()
-            .setHSL(hue,1,0.72);
-
-        lineColors.push(c.r,c.g,c.b);
-    }
-
-    geo.setAttribute(
-        "color",
-        new THREE.Float32BufferAttribute(
-            lineColors,
-            3
-        )
-    );
-
-    curveLine = new THREE.Line(
-        geo,
-        new THREE.LineBasicMaterial({
-            vertexColors:true,
-            transparent:true,
-            opacity:0.95
-        })
-    );
-
-    cathedral.add(curveLine);
-
-    for(let i=0;i<pts.length;i+=20){
-
-        const s = i*0.018;
-
-        const p = pts[i];
-
-        const T = tangent(s,time);
-        const N = normal(s,time);
-
-        if(!isFinite(N.x)) continue;
-
-        const B = binormal(T,N);
-
-        const len =
-            1.2 +
-            Math.sin(time+s)*0.8 +
-            burst;
-
-        const nEnd =
-            p.clone().add(
-                N.clone().multiplyScalar(len*2)
-            );
-
-        const bEnd =
-            p.clone().add(
-                B.clone().multiplyScalar(len*1.5)
-            );
-
-        const ng =
-            new THREE.BufferGeometry()
-            .setFromPoints([p,nEnd]);
-
-        const bg =
-            new THREE.BufferGeometry()
-            .setFromPoints([p,bEnd]);
-
-        const nl = new THREE.Line(
-            ng,
-            new THREE.LineBasicMaterial({
-                color:0x66aaff,
-                transparent:true,
-                opacity:0.22
-            })
-        );
-
-        const bl = new THREE.Line(
-            bg,
-            new THREE.LineBasicMaterial({
-                color:0xaa66ff,
-                transparent:true,
-                opacity:0.15
-            })
-        );
-
-        normalGroup.add(nl);
-        binormalGroup.add(bl);
-    }
-
-    const pos =
-        particleGeo.attributes.position.array;
-
-    const col =
-        particleGeo.attributes.color.array;
-
-    for(let i=0;i<PARTICLES;i++){
-
-        const id =
-            (i*13)%pts.length;
-
-        const s = id*0.018;
-
-        const p = pts[id];
-
-        const T = tangent(s,time);
-        const N = normal(s,time);
-
-        if(!isFinite(N.x)) continue;
-
-        const B = binormal(T,N);
-
-        const a =
-            Math.sin(i*0.01+time)*2.8;
-
-        const b =
-            Math.cos(i*0.013+time*0.7)*2.2;
-
-        const v =
-            p.clone()
-            .add(
-                N.clone().multiplyScalar(a)
-            )
-            .add(
-                B.clone().multiplyScalar(b)
-            );
-
-        pos[i*3] = v.x;
-        pos[i*3+1] = v.y;
-        pos[i*3+2] = v.z;
-
-        col[i*3] =
-            0.5+0.5*Math.sin(i*0.01+time);
-
-        col[i*3+1] =
-            0.5+0.5*Math.sin(
-                i*0.01+time+2.094
-            );
-
-        col[i*3+2] =
-            0.5+0.5*Math.sin(
-                i*0.01+time+4.188
-            );
-    }
-
-    particleGeo.attributes.position.needsUpdate = true;
-    particleGeo.attributes.color.needsUpdate = true;
 }
 
-let time = 0;
+const nebulaA =
+createNebula(
+10000,
+42000,
+220,
+0xff5522,
+0.05
+);
+
+const nebulaB =
+createNebula(
+8000,
+56000,
+320,
+0x4444ff,
+0.03
+);
+
+const nebulaC =
+createNebula(
+6000,
+78000,
+520,
+0x88ccff,
+0.018
+);
+
+/* =========================================================
+BLACK HOLE
+========================================================= */
+
+const holeMaterial =
+new THREE.ShaderMaterial({
+
+uniforms:{
+uTime:{value:0}
+},
+
+vertexShader:`
+
+varying vec3 vPos;
+
+void main(){
+
+vPos = position;
+
+gl_Position =
+projectionMatrix *
+modelViewMatrix *
+vec4(position,1.0);
+
+}
+
+`,
+
+fragmentShader:`
+
+uniform float uTime;
+
+varying vec3 vPos;
+
+void main(){
+
+float r =
+length(vPos);
+
+float wave =
+sin(
+uTime*0.4 +
+r*0.08
+)*0.03;
+
+float dark =
+0.01 + wave;
+
+gl_FragColor =
+vec4(
+vec3(dark),
+1.0
+);
+
+}
+
+`
+
+});
+
+const hole =
+new THREE.Mesh(
+
+new THREE.SphereGeometry(
+82,
+128,
+128
+),
+
+holeMaterial
+
+);
+
+scene.add(hole);
+
+/* =========================================================
+PHOTON HALO
+========================================================= */
+
+const halo =
+new THREE.Mesh(
+
+new THREE.TorusGeometry(
+150,
+10,
+32,
+260
+),
+
+new THREE.MeshBasicMaterial({
+color:0xffbb88
+})
+
+);
+
+halo.rotation.x =
+Math.PI/2;
+
+scene.add(halo);
+
+/* =========================================================
+DISK
+========================================================= */
+
+function createDisk(
+count,
+inner,
+outer,
+size,
+colorA,
+colorB
+){
+
+const geo =
+new THREE.BufferGeometry();
+
+const pos =
+new Float32Array(count*3);
+
+const colors =
+new Float32Array(count*3);
+
+for(let i=0;i<count;i++){
+
+const r =
+inner +
+Math.pow(Math.random(),1.7)
+*
+(outer-inner);
+
+const theta =
+Math.random()*Math.PI*2;
+
+pos[i*3] =
+Math.cos(theta)*r;
+
+pos[i*3+1] =
+(Math.random()-.5)
+*
+(r-inner)
+*
+0.05;
+
+pos[i*3+2] =
+Math.sin(theta)*r;
+
+const c1 =
+new THREE.Color(colorA);
+
+const c2 =
+new THREE.Color(colorB);
+
+const mix =
+(r-inner)/(outer-inner);
+
+const c =
+c1.clone().lerp(c2,mix);
+
+colors[i*3] = c.r;
+colors[i*3+1] = c.g;
+colors[i*3+2] = c.b;
+
+}
+
+geo.setAttribute(
+"position",
+new THREE.BufferAttribute(pos,3)
+);
+
+geo.setAttribute(
+"color",
+new THREE.BufferAttribute(colors,3)
+);
+
+const mat =
+new THREE.PointsMaterial({
+
+size:size,
+vertexColors:true,
+transparent:true,
+opacity:.82,
+depthWrite:false,
+map:glowTexture,
+blending:THREE.AdditiveBlending
+
+});
+
+const points =
+new THREE.Points(geo,mat);
+
+scene.add(points);
+
+return points;
+
+}
+
+const dustDisk =
+createDisk(
+30000,
+1200,
+3400,
+9,
+0x330000,
+0x110011
+);
+
+const plasmaDisk =
+createDisk(
+70000,
+260,
+1400,
+13,
+0xffeecc,
+0xff3300
+);
+
+const photonRing =
+createDisk(
+16000,
+90,
+180,
+20,
+0xffffff,
+0xffcc88
+);
+
+/* =========================================================
+POST FX
+========================================================= */
+
+const renderTarget =
+new THREE.WebGLRenderTarget(
+window.innerWidth,
+window.innerHeight,
+{
+samples:2
+}
+);
+
+const postScene =
+new THREE.Scene();
+
+const postCamera =
+new THREE.OrthographicCamera(
+-1,1,1,-1,0,1
+);
+
+const postMaterial =
+new THREE.ShaderMaterial({
+
+uniforms:{
+tScene:{value:renderTarget.texture},
+uTime:{value:0},
+uResolution:{
+value:new THREE.Vector2(
+window.innerWidth,
+window.innerHeight
+)
+}
+},
+
+vertexShader:`
+
+varying vec2 vUv;
+
+void main(){
+
+vUv = uv;
+
+gl_Position =
+vec4(position.xy,0.0,1.0);
+
+}
+
+`,
+
+fragmentShader:`
+
+uniform sampler2D tScene;
+uniform float uTime;
+uniform vec2 uResolution;
+
+varying vec2 vUv;
+
+void main(){
+
+vec2 uv = vUv;
+
+vec2 center =
+vec2(0.5);
+
+vec2 p =
+uv - center;
+
+float r =
+length(p);
+
+float angle =
+atan(p.y,p.x);
+
+/* =========================================================
+SLIT-SCAN
+========================================================= */
+
+float warp =
+
+sin(
+angle*12.0 +
+uTime*0.6
+) * 0.008
+
++
+
+sin(
+r*40.0 -
+uTime*0.9
+) * 0.006;
+
+float stretch =
+
+1.0
++
+r*0.42
+
++
+
+sin(
+uTime*0.3 +
+r*8.0
+)*0.03;
+
+vec2 suv =
+
+center +
+normalize(p + 0.00001)
+*
+r
+*
+stretch;
+
+suv.x += warp;
+suv.y += warp*0.5;
+
+/* =========================================================
+CHROMA
+========================================================= */
+
+float chroma =
+r * 0.008;
+
+vec3 col;
+
+col.r =
+texture2D(
+tScene,
+suv + vec2(chroma,0.0)
+).r;
+
+col.g =
+texture2D(
+tScene,
+suv
+).g;
+
+col.b =
+texture2D(
+tScene,
+suv - vec2(chroma,0.0)
+).b;
+
+/* =========================================================
+PHOTON BEAMS
+========================================================= */
+
+float beam =
+
+pow(
+max(
+0.0,
+cos(angle*24.0 + uTime*0.25)
+),
+18.0
+)
+
+*
+
+0.22
+
+*
+
+smoothstep(
+0.8,
+0.1,
+r
+);
+
+col += vec3(
+1.0,
+0.45,
+0.2
+) * beam;
+
+/* =========================================================
+VIGNETTE
+========================================================= */
+
+float vignette =
+
+smoothstep(
+1.25,
+0.18,
+r
+);
+
+col *= vignette;
+
+gl_FragColor =
+vec4(col,1.0);
+
+}
+
+`
+
+});
+
+const postQuad =
+new THREE.Mesh(
+
+new THREE.PlaneGeometry(2,2),
+postMaterial
+
+);
+
+postScene.add(postQuad);
+
+/* =========================================================
+ANIMATION
+========================================================= */
 
 function animate(){
 
-    requestAnimationFrame(animate);
+requestAnimationFrame(animate);
 
-    time += 0.008;
+const t =
+clock.getElapsedTime();
 
-    burst *= 0.985;
+pointer.x =
+lerp(pointer.x,pointer.tx,.04);
 
-    build(time);
+pointer.y =
+lerp(pointer.y,pointer.ty,.04);
 
-    cathedral.rotation.y += 0.0012;
+/* =========================================================
+CAMERA
+========================================================= */
 
-    cathedral.rotation.x =
-        Math.sin(time*0.15)*0.12;
+camera.position.x =
+Math.cos(
+t*0.06 + pointer.x
+) * 2600;
 
-    const r =
-        10 +
-        10*Math.sin(time*0.5);
+camera.position.z =
+Math.sin(
+t*0.06 + pointer.x
+) * 2600;
 
-    const g =
-        10 +
-        10*Math.sin(time*0.5+2);
+camera.position.y =
+pointer.y * 500;
 
-    const b =
-        20 +
-        15*Math.sin(time*0.5+4);
+camera.lookAt(0,0,0);
 
-    scene.background =
-        new THREE.Color(
-            `rgb(${r|0},${g|0},${b|0})`
-        );
+/* =========================================================
+ROTATION
+========================================================= */
 
-    controls.update();
+starsNear.rotation.y += 0.00008;
+starsMid.rotation.y += 0.00003;
+starsFar.rotation.y += 0.00001;
 
-    renderer.render(scene,camera);
+nebulaA.rotation.y -= 0.00003;
+nebulaB.rotation.y += 0.00002;
+nebulaC.rotation.y -= 0.00001;
+
+dustDisk.rotation.y += 0.0006;
+plasmaDisk.rotation.y += 0.002;
+photonRing.rotation.y += 0.006;
+
+/* =========================================================
+EVENT HORIZON BREATHING
+========================================================= */
+
+const pulse =
+
+1.0
++
+Math.sin(t*0.18)*0.09
++
+Math.sin(t*0.043)*0.05
++
+Math.sin(t*0.011)*0.025;
+
+hole.scale.set(
+pulse,
+pulse * (
+1.0 +
+Math.sin(t*0.07)*0.03
+),
+pulse
+);
+
+hole.material.uniforms.uTime.value = t;
+
+halo.scale.setScalar(
+
+1.0
++
+Math.sin(t*0.18)*0.12
++
+Math.sin(t*0.9)*0.015
+
+);
+
+dustDisk.scale.setScalar(
+1.0 +
+Math.sin(t*0.15)*0.035
+);
+
+plasmaDisk.scale.setScalar(
+1.0 +
+Math.sin(t*0.18)*0.055
+);
+
+photonRing.scale.setScalar(
+1.0 +
+Math.sin(t*0.22)*0.09
+);
+
+/* =========================================================
+RENDER
+========================================================= */
+
+renderer.setRenderTarget(renderTarget);
+
+renderer.render(scene,camera);
+
+renderer.setRenderTarget(null);
+
+postMaterial.uniforms.uTime.value = t;
+
+renderer.render(
+postScene,
+postCamera
+);
+
 }
 
 animate();
 
-window.addEventListener(
-    "resize",
-    ()=>{
+/* =========================================================
+RESIZE
+========================================================= */
 
-        camera.aspect =
-            window.innerWidth/
-            window.innerHeight;
+window.addEventListener("resize",()=>{
 
-        camera.updateProjectionMatrix();
+camera.aspect =
+window.innerWidth/window.innerHeight;
 
-        renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
-        );
-    }
+camera.updateProjectionMatrix();
+
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
 );
 
-let lastTap = 0;
-
-window.addEventListener(
-    "touchstart",
-    e=>{
-
-        const now = Date.now();
-
-        if(now-lastTap < 300){
-
-            burst = 4.0;
-        }
-
-        lastTap = now;
-    }
+renderTarget.setSize(
+window.innerWidth,
+window.innerHeight
 );
 
-window.addEventListener(
-    "dblclick",
-    ()=>{
-
-        burst = 4.0;
-    }
+postMaterial.uniforms.uResolution.value.set(
+window.innerWidth,
+window.innerHeight
 );
+
+});
 
 </script>
-
 </body>
 </html>
